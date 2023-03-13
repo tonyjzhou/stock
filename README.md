@@ -40,6 +40,10 @@ jupyter lab
 
 * https://pypi.org/project/jupyterlab/
 
+### yahooquery
+* https://github.com/dpguthrie/yahooquery
+* https://yahooquery.dpguthrie.com/
+
 ### yfinance
 
 * https://github.com/ranaroussi/yfinance
