@@ -1,3 +1,4 @@
+jupyterlab
+yahooquery
 yfinance
 pandas-datareader
-jupyterlab

@@ -10,9 +10,16 @@ To check if a stock is a worthy investment, I need to
 This project provides reusable components for it.
 
 ## How?
+### Use virtual environment
+```commandline
+workon stock
+```
+### Install all packages
+```commandline
+pip install -r requirements.txt
+```
 
 ### Run Jupyter Lab
-
 ```commandline
 jupyter lab
 ```
@@ -20,11 +27,10 @@ jupyter lab
 ## What?
 
 ### Todo
-
 * .
 
 ### Done
-
+* ~~Try https://github.com/dpguthrie/yahooquery~~
 * ~~Install JupyterLab for interactive and reproducible work~~
 * ~~Install yfinance and pandas-datareader for yahoo finance API~~
 
