@@ -27,7 +27,8 @@ jupyter lab
 ## What?
 
 ### Todo
-* .
+* Add a cheap business tester notebook
+* Develop a guru stock idea notebook
 
 ### Done
 * ~~Try https://github.com/dpguthrie/yahooquery~~
