@@ -2,3 +2,4 @@ jupyterlab
 yahooquery
 yfinance
 pandas-datareader
+matplotlib
