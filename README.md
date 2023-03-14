@@ -27,13 +27,13 @@ jupyter lab
 ## What?
 
 ### Todo
-* Plot a graph for Free Cash Flow
-* Plot a graph for Balance sheet analysis
 * Add a comparison between similar stocks in Strong business tester
 * Add a cheap business tester notebook
 * Develop a guru stock idea notebook
 
 ### Done
+* ~~Plot a graph for Free Cash Flow~~
+* ~~Plot a graph for Balance sheet analysis~~
 * ~~Try https://github.com/dpguthrie/yahooquery~~
 * ~~Install JupyterLab for interactive and reproducible work~~
 * ~~Install yfinance and pandas-datareader for yahoo finance API~~
