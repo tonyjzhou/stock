@@ -27,6 +27,9 @@ jupyter lab
 ## What?
 
 ### Todo
+* Plot a graph for Free Cash Flow
+* Plot a graph for Balance sheet analysis
+* Add a comparison between similar stocks in Strong business tester
 * Add a cheap business tester notebook
 * Develop a guru stock idea notebook
 
