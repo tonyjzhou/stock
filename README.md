@@ -27,8 +27,8 @@ jupyter lab
 ## What?
 
 ### Todo
-* Add a comparison between similar stocks in Strong business tester
 * Add a cheap business tester notebook
+* Add a comparison between similar stocks in Strong business tester
 * Develop a guru stock idea notebook
 
 ### Done
