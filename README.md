@@ -27,11 +27,13 @@ jupyter lab
 ## What?
 
 ### Todo
-* Add a cheap business tester notebook
+* Get a list of all US based companies
 * Add a comparison between similar stocks in Strong business tester
 * Develop a guru stock idea notebook
 
 ### Done
+* ~~Add a cheap business tester~~
+* ~~Add a cheap business tester notebook~~
 * ~~Plot a graph for Free Cash Flow~~
 * ~~Plot a graph for Balance sheet analysis~~
 * ~~Try https://github.com/dpguthrie/yahooquery~~
