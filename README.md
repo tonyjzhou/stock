@@ -32,8 +32,8 @@ jupyter lab
 ## What?
 
 ### Todo
-* Keep track of the list of companies that I have already filtered in the past 12 months
-  * Create a stateful design
+* Keep track of the list of companies that have already been processed in the past 12 months
+  * ~~Create a stateful design~~
   * Implement the stateful design
 * Add a comparison between similar stocks in Strong business tester
 * Develop a guru stock idea notebook
@@ -57,7 +57,7 @@ jupyter lab
 ### Questions
 * ~~What fields do we need in the data model to keep the state for strong business tester?~~
   * symbol, tested_at
-* What are the possible database to use?
+* ~~What are the possible database to use?~~
 * ~~Should the data store be a graph or relational data store?~~ 
 
 ## Where?
