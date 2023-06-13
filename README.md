@@ -24,14 +24,23 @@ pip install -r requirements.txt
 jupyter lab
 ```
 
+### Run strong business tester
+```commandline
+./strong_business_tester.py
+```
+
 ## What?
 
 ### Todo
-* Get a list of all US based companies
+* Keep track of the list of companies that I have already filtered in the past 12 months
+  * Create a stateful design
+  * Implement the stateful design
 * Add a comparison between similar stocks in Strong business tester
 * Develop a guru stock idea notebook
+* Make it a web application
 
 ### Done
+* ~~Get a list of all US based companies~~
 * ~~Add a cheap business tester~~
 * ~~Add a cheap business tester notebook~~
 * ~~Plot a graph for Free Cash Flow~~
@@ -39,6 +48,17 @@ jupyter lab
 * ~~Try https://github.com/dpguthrie/yahooquery~~
 * ~~Install JupyterLab for interactive and reproducible work~~
 * ~~Install yfinance and pandas-datareader for yahoo finance API~~
+
+### Challenges
+* 2023-03-12 yfinance doesn't work after the first trial. It failed with the error "Exception: yfinance failed to
+  decrypt Yahoo data response". The issue had been reported by others
+  in https://github.com/ranaroussi/yfinance/issues/1407. Currently not solved yet.
+
+### Questions
+* ~~What fields do we need in the data model to keep the state for strong business tester?~~
+  * symbol, tested_at
+* What are the possible database to use?
+* ~~Should the data store be a graph or relational data store?~~ 
 
 ## Where?
 
@@ -55,9 +75,3 @@ jupyter lab
 * https://github.com/ranaroussi/yfinance
 * https://pypi.org/project/yfinance/
 * https://aroussi.com/post/python-yahoo-finance
-
-## Challenges
-
-* 2023-03-12 yfinance doesn't work after the first trial. It failed with the error "Exception: yfinance failed to
-  decrypt Yahoo data response". The issue had been reported by others
-  in https://github.com/ranaroussi/yfinance/issues/1407. Currently not solved yet.
