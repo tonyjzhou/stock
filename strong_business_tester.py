@@ -29,7 +29,7 @@ def has_strong_balance_sheet(ticker):
     return True
 
 
-def has_strong_business(ticker):
+def test_strong_business(ticker):
     if not has_consecutive_positive_fcf(ticker):
         print(f"{ticker.symbols} doesn't have consecutive positive fcf")
         return False
@@ -43,42 +43,36 @@ def has_strong_business(ticker):
 
 
 def main():
-    # has_strong_business(Ticker('TSLA'))
-    # has_strong_business(Ticker('AAPL'))
-    # has_strong_business(Ticker('LCID'))
-    # has_strong_business(Ticker('AMZN'))
-    # has_strong_business(Ticker('BABA'))
-
-    has_strong_business(Ticker('ABBV'))
-    has_strong_business(Ticker('VZ'))
-    has_strong_business(Ticker('AMGN'))
-    has_strong_business(Ticker('EQNR'))
-    has_strong_business(Ticker('BTI'))
-    has_strong_business(Ticker('EL'))
-    has_strong_business(Ticker('TGT'))
-    has_strong_business(Ticker('JD'))
-    has_strong_business(Ticker('MMM'))
-    has_strong_business(Ticker('KDP'))
-    has_strong_business(Ticker('D'))
-    has_strong_business(Ticker('SYY'))
-    has_strong_business(Ticker('DG'))
-    has_strong_business(Ticker('NTR'))
-    has_strong_business(Ticker('VOD'))
-    has_strong_business(Ticker('WAT'))
-    has_strong_business(Ticker('AMCR'))
-    has_strong_business(Ticker('INCY'))
-    has_strong_business(Ticker('NIO'))
-    has_strong_business(Ticker('CF'))
-    has_strong_business(Ticker('EPAM'))
-    has_strong_business(Ticker('MOS'))
-    has_strong_business(Ticker('DPZ'))
-    has_strong_business(Ticker('IP'))
-    has_strong_business(Ticker('RHI'))
-    has_strong_business(Ticker('ICL'))
-    has_strong_business(Ticker('VFC'))
-    has_strong_business(Ticker('AA'))
-    has_strong_business(Ticker('NFE'))
-    has_strong_business(Ticker('CWEN'))
+    test_strong_business(Ticker('ABBV'))
+    test_strong_business(Ticker('VZ'))
+    test_strong_business(Ticker('AMGN'))
+    test_strong_business(Ticker('EQNR'))
+    test_strong_business(Ticker('BTI'))
+    test_strong_business(Ticker('EL'))
+    test_strong_business(Ticker('TGT'))
+    test_strong_business(Ticker('JD'))
+    test_strong_business(Ticker('MMM'))
+    test_strong_business(Ticker('KDP'))
+    test_strong_business(Ticker('D'))
+    test_strong_business(Ticker('SYY'))
+    test_strong_business(Ticker('DG'))
+    test_strong_business(Ticker('NTR'))
+    test_strong_business(Ticker('VOD'))
+    test_strong_business(Ticker('WAT'))
+    test_strong_business(Ticker('AMCR'))
+    test_strong_business(Ticker('INCY'))
+    test_strong_business(Ticker('NIO'))
+    test_strong_business(Ticker('CF'))
+    test_strong_business(Ticker('EPAM'))
+    test_strong_business(Ticker('MOS'))
+    test_strong_business(Ticker('DPZ'))
+    test_strong_business(Ticker('IP'))
+    test_strong_business(Ticker('RHI'))
+    test_strong_business(Ticker('ICL'))
+    test_strong_business(Ticker('VFC'))
+    test_strong_business(Ticker('AA'))
+    test_strong_business(Ticker('NFE'))
+    test_strong_business(Ticker('CWEN'))
 
 
 if __name__ == '__main__':
