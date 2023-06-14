@@ -59,36 +59,10 @@ def test_strong_business(symbol):
 
 
 def main():
-    test_strong_business('ABBV')
-    test_strong_business('VZ')
-    test_strong_business('AMGN')
-    test_strong_business('EQNR')
-    test_strong_business('BTI')
-    test_strong_business('EL')
-    test_strong_business('TGT')
-    test_strong_business('JD')
-    test_strong_business('MMM')
-    test_strong_business('KDP')
-    test_strong_business('D')
-    test_strong_business('SYY')
-    test_strong_business('DG')
-    test_strong_business('NTR')
-    test_strong_business('VOD')
-    test_strong_business('WAT')
-    test_strong_business('AMCR')
-    test_strong_business('INCY')
-    test_strong_business('NIO')
-    test_strong_business('CF')
-    test_strong_business('EPAM')
-    test_strong_business('MOS')
-    test_strong_business('DPZ')
-    test_strong_business('IP')
-    test_strong_business('RHI')
-    test_strong_business('ICL')
-    test_strong_business('VFC')
-    test_strong_business('AA')
-    test_strong_business('NFE')
-    test_strong_business('CWEN')
+    with open("tickers.txt", "r") as file:
+        for line in file:
+            symbol = line.strip()  # Remove any trailing newline character
+            test_strong_business(symbol)
 
 
 if __name__ == '__main__':
