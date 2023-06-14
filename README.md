@@ -40,6 +40,7 @@ jupyter lab
 * Make it a web application
 
 ### Done
+* ~~Process new stocks by reading an input file~~
 * ~~Get a list of all US based companies~~
 * ~~Add a cheap business tester~~
 * ~~Add a cheap business tester notebook~~
