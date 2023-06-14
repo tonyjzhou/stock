@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import argparse
 from datetime import datetime
 
 from yahooquery import Ticker
@@ -43,7 +43,7 @@ def has_processed(symbol):
     return (datetime.now() - tested_at).days < 365
 
 
-def test_strong_business(symbol):
+def test_strong_business(symbol, verbose):
     if has_processed(symbol):
         print(f"{symbol} has already been processed")
         return False
@@ -52,11 +52,13 @@ def test_strong_business(symbol):
 
         ticker = Ticker(symbol)
         if not has_consecutive_positive_fcf(ticker):
-            print(f"{ticker.symbols} doesn't have consecutive positive fcf")
+            if verbose:
+                print(f"{ticker.symbols} doesn't have consecutive positive fcf")
             return False
 
         if not has_strong_balance_sheet(ticker):
-            print(f"{ticker.symbols} doesn't have strong balance sheet")
+            if verbose:
+                print(f"{ticker.symbols} doesn't have strong balance sheet")
             return False
 
         print(f"{ticker.symbols} has a strong business")
@@ -64,10 +66,15 @@ def test_strong_business(symbol):
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Test if a stock has a strong business.')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='only print stocks with a strong business')
+    args = parser.parse_args()
+
     with open("tickers.txt", "r") as file:
         for line in file:
-            symbol = line.strip()  # Remove any trailing newline character
-            test_strong_business(symbol)
+            symbol = line.strip()
+            test_strong_business(symbol, args.verbose)
 
 
 if __name__ == '__main__':

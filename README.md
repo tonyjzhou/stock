@@ -49,6 +49,7 @@ jupyter lab
 * Make it a web application
 
 ### Done
+* ~~Introduce a verbose option so that we only output those stock symbols with a strong business~~
 * ~~Keep track of the list of companies that have already been processed in the past 12 months~~
     * ~~Create a stateful design~~
     * ~~Implement the stateful design~~
