@@ -38,10 +38,6 @@ jupyter lab
 ## What?
 
 ### Todo
-
-* Keep track of the list of companies that have already been processed in the past 12 months
-    * ~~Create a stateful design~~
-    * Implement the stateful design
 * Use multithreading or asynchronous programming to fetch and process data for multiple companies concurrently. This
   would be especially beneficial if the list of companies is large, as the program would not need to wait for each
   company's data to be fetched and processed before moving on to the next one.
@@ -53,7 +49,9 @@ jupyter lab
 * Make it a web application
 
 ### Done
-
+* ~~Keep track of the list of companies that have already been processed in the past 12 months~~
+    * ~~Create a stateful design~~
+    * ~~Implement the stateful design~~
 * ~~Process new stocks by reading an input file~~
 * ~~Get a list of all US based companies~~
 * ~~Add a cheap business tester~~

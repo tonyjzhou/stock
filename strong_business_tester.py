@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 from datetime import datetime
 
 from yahooquery import Ticker
@@ -33,9 +34,13 @@ def has_strong_balance_sheet(ticker):
 
 
 def has_processed(symbol):
-    if read_data(symbol):
-        return True
-    return False
+    rows = read_data(symbol)
+    if not rows:
+        return False
+
+    symbol, tested_at = rows[0]
+    tested_at = datetime.strptime(tested_at, '%Y-%m-%d %H:%M:%S.%f')
+    return (datetime.now() - tested_at).days < 365
 
 
 def test_strong_business(symbol):
