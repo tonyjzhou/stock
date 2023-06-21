@@ -9,6 +9,11 @@ from database import insert_data, read_data
 
 def has_consecutive_positive_fcf(ticker):
     cash_flow = ticker.cash_flow(frequency='Annual')
+
+    if cash_flow is None or isinstance(cash_flow, str) or cash_flow.empty:
+        print(f"No cash flow data available for {ticker.symbols}")
+        return False
+
     free_cash_flow = cash_flow[['asOfDate', 'FreeCashFlow']]
     free_cash_flow = free_cash_flow.set_index('asOfDate')
     fcf = free_cash_flow.to_dict()['FreeCashFlow']

@@ -42,6 +42,13 @@ def read_data(symbol=None):
 
 
 def main():
+    with open("tickers.txt", "r") as file:
+        for line in file:
+            symbol = line.strip()
+            delete_data(symbol)
+
+
+def simple_test():
     create_table()
     insert_data('AAPL', datetime.now())
     print(read_data('AAPL'))  # Prints: [('AAPL', '2023-06-13')]
