@@ -10,7 +10,7 @@ from database import insert_data, read_data
 def has_consecutive_positive_fcf(ticker):
     cash_flow = ticker.cash_flow(frequency='Annual')
 
-    if cash_flow is None or isinstance(cash_flow, str) or cash_flow.empty:
+    if cash_flow is None or isinstance(cash_flow, str) or cash_flow.empty or 'FreeCashFlow' not in cash_flow.columns:
         print(f"No cash flow data available for {ticker.symbols}")
         return False
 
@@ -24,7 +24,7 @@ def has_consistently_low_debt_ratios(debt_equity_ratio_values, threshold=2.4):
     return all([v < threshold for v in debt_equity_ratio_values])
 
 
-def has_strong_balance_sheet(ticker):
+def has_strong_balance_sheet(ticker, verbose):
     balance_sheet = ticker.balance_sheet(frequency='Quarterly')
     balance_sheet['TotalDebt/CommonStockEquity'] = balance_sheet['TotalDebt'] / balance_sheet['CommonStockEquity']
     debt_equity_ratio = balance_sheet[['asOfDate', 'TotalDebt/CommonStockEquity']]
@@ -32,7 +32,8 @@ def has_strong_balance_sheet(ticker):
     debt_equity_ratio_values = list(debt_equity_ratio.values())
 
     if not has_consistently_low_debt_ratios(debt_equity_ratio_values):
-        print(f"{ticker.symbols} doesn't have consistently low debt ratios")
+        if verbose:
+            print(f"{ticker.symbols} doesn't have consistently low debt ratios")
         return False
 
     return True
@@ -61,7 +62,7 @@ def test_strong_business(symbol, verbose):
                 print(f"{ticker.symbols} doesn't have consecutive positive fcf")
             return False
 
-        if not has_strong_balance_sheet(ticker):
+        if not has_strong_balance_sheet(ticker, verbose):
             if verbose:
                 print(f"{ticker.symbols} doesn't have strong balance sheet")
             return False

@@ -26,6 +26,7 @@ def update_data(symbol, tested_at):
 
 def delete_data(symbol):
     with sqlite3.connect('test.db') as conn:
+        print(f"Deleting {symbol} from database ...")
         c = conn.cursor()
         c.execute("DELETE from stocks WHERE symbol = ?", (symbol,))
 
