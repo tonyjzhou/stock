@@ -38,17 +38,19 @@ jupyter lab
 ## What?
 
 ### Todo
-* Use multithreading or asynchronous programming to fetch and process data for multiple companies concurrently. This
-  would be especially beneficial if the list of companies is large, as the program would not need to wait for each
-  company's data to be fetched and processed before moving on to the next one.
-* When storing a company's symbol and the current datetime in the database, you could also store the results of the
-  checks. This way, if you need to check a company's data again later, you can just query the database instead of having
-  to fetch and process the data again.
-* Add a comparison between similar stocks in Strong business tester
-* Develop a guru stock idea notebook
-* Make it a web application
+1. Enable extracting data with the name of a company from https://www.barrons.com/market-data/stocks/new-fifty-two-week-highs-lows
+2. Enable comparisons of multiple data sources: Yahoo Finance, https://www.macrotrends.net/ , https://www.barrons.com/
+3. Add a comparison between similar stocks in Strong business tester
+4. Make it a web application
+5. When storing a company's symbol and the current datetime in the database, you could also store the results of the
+   checks. This way, if you need to check a company's data again later, you can just query the database instead of
+   having to fetch and process the data again.
+6. Use multithreading or asynchronous programming to fetch and process data for multiple companies concurrently. This
+   would be especially beneficial if the list of companies is large, as the program would not need to wait for each
+   company's data to be fetched and processed before moving on to the next one.
 
 ### Done
+* ~~Develop a guru stock idea notebook~~
 * ~~Introduce a verbose option so that we only output those stock symbols with a strong business~~
 * ~~Keep track of the list of companies that have already been processed in the past 12 months~~
     * ~~Create a stateful design~~
