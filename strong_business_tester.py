@@ -11,13 +11,56 @@ def has_consecutive_positive_fcf(ticker):
     cash_flow = ticker.cash_flow(frequency='Annual')
 
     if cash_flow is None or isinstance(cash_flow, str) or cash_flow.empty or 'FreeCashFlow' not in cash_flow.columns:
-        print(f"No cash flow data available for {ticker.symbols}")
+        print(f"No FreeCashFlow data available for {ticker.symbols}")
         return False
 
-    free_cash_flow = cash_flow[['asOfDate', 'FreeCashFlow']]
-    free_cash_flow = free_cash_flow.set_index('asOfDate')
-    fcf = free_cash_flow.to_dict()['FreeCashFlow']
-    return all([v > 0 for v in fcf.values()])
+    free_cash_flows = all_free_cash_flows(cash_flow)
+    return all([v > 0 for v in free_cash_flows.values()])
+
+
+def all_free_cash_flows(cash_flow):
+    free_cash_flows = cash_flow[['asOfDate', 'FreeCashFlow']].set_index('asOfDate')
+    return free_cash_flows.to_dict()['FreeCashFlow']
+
+
+def all_common_stock_equities(balance_sheet):
+    common_stock_equities = balance_sheet[['asOfDate', 'CommonStockEquity']].set_index('asOfDate')
+    return common_stock_equities.to_dict()['CommonStockEquity']
+
+
+def average_free_cash_flow(ticker):
+    cash_flow = ticker.cash_flow(frequency='Annual')
+
+    if cash_flow is None or isinstance(cash_flow, str) or cash_flow.empty or 'FreeCashFlow' not in cash_flow.columns:
+        print(f"No FreeCashFlow data available for {ticker.symbols}")
+        return 0
+
+    free_cash_flows = all_free_cash_flows(cash_flow)
+    return sum(free_cash_flows.values()) / len(free_cash_flows.values())
+
+
+def average_common_stock_equity(ticker):
+    balance_sheet = ticker.balance_sheet(frequency='Annual')
+
+    if balance_sheet is None or isinstance(balance_sheet,
+                                           str) or balance_sheet.empty or 'CommonStockEquity' not in balance_sheet.columns:
+        print(f"No CommonStockEquity data available for {ticker.symbols}")
+        return 0
+
+    common_stock_equities = all_common_stock_equities(balance_sheet)
+    return sum(common_stock_equities.values()) / len(common_stock_equities.values())
+
+
+def has_good_return_on_equity(ticker, verbose=False):
+    average_fcf = average_free_cash_flow(ticker)
+    average_cse = average_common_stock_equity(ticker)
+
+    average_roe = average_fcf / average_cse
+
+    if verbose:
+        print(f"{ticker.symbols} average_roe = {average_roe}")
+
+    return average_roe > 0.13
 
 
 def has_consistently_low_debt_ratios(debt_equity_ratio_values, threshold=2.4):
@@ -33,7 +76,7 @@ def has_strong_balance_sheet(ticker, verbose):
 
     if not has_consistently_low_debt_ratios(debt_equity_ratio_values):
         if verbose:
-            print(f"{ticker.symbols} doesn't have consistently low debt ratios")
+            print(f"{ticker.symbols} doesn't have consistently low debt ratios: {debt_equity_ratio_values}")
         return False
 
     return True
@@ -62,7 +105,12 @@ def test_strong_business(symbol, verbose):
                 print(f"{ticker.symbols} doesn't have consecutive positive fcf")
             return False
 
-        if not has_strong_balance_sheet(ticker, verbose):
+        if not has_good_return_on_equity(ticker, verbose=verbose):
+            if verbose:
+                print(f"{ticker.symbols} doesn't have good return on equity")
+            return False
+
+        if not has_strong_balance_sheet(ticker, verbose=verbose):
             if verbose:
                 print(f"{ticker.symbols} doesn't have strong balance sheet")
             return False
@@ -81,6 +129,7 @@ def main():
         for line in file:
             symbol = line.strip()
             test_strong_business(symbol, args.verbose)
+            print()
 
 
 if __name__ == '__main__':

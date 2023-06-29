@@ -1,6 +1,0 @@
-CAVA
-DPG
-EIC
-HBB
-PGZ
-TG
