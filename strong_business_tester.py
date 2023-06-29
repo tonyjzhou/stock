@@ -8,6 +8,12 @@ from database import insert_data, read_data
 
 
 def has_consecutive_positive_fcf(ticker):
+    """
+    This filter will rule out Amazon and MU as strong business because they have negative FCF in some years.
+
+    :param ticker:
+    :return:
+    """
     cash_flow = ticker.cash_flow(frequency='Annual')
 
     if cash_flow is None or isinstance(cash_flow, str) or cash_flow.empty or 'FreeCashFlow' not in cash_flow.columns:
