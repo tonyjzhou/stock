@@ -42,7 +42,7 @@ jupyter lab
    1. Compare Equity to Market Cap
    2. Compare average FCF to Market Cap
 2. Check if a business is good
-   1. average FCF / average Equity >= x%
+   1. ~~average FCF / average Equity >= x%~~
    2. Repurchase of Capital Stock
 3. Don't store business that's strong but not cheap enough 
 4. Enable comparisons of multiple data sources: Yahoo Finance, https://www.macrotrends.net/ , https://www.barrons.com/
