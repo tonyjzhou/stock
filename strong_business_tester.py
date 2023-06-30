@@ -32,7 +32,7 @@ def all_free_cash_flows(cash_flow):
 
 def all_common_stock_equities(balance_sheet):
     common_stock_equities = balance_sheet[['asOfDate', 'CommonStockEquity']].set_index('asOfDate')
-    return common_stock_equities.to_dict()['CommonStockEquity']
+    return strip_nan(common_stock_equities.to_dict()['CommonStockEquity'].values())
 
 
 def strip_nan(ns):
@@ -57,8 +57,7 @@ def average_common_stock_equity(ticker):
         print(f"No CommonStockEquity data available for {ticker.symbols}")
         return 0
 
-    common_stock_equities = all_common_stock_equities(balance_sheet)
-    return sum(common_stock_equities.values()) / len(common_stock_equities.values())
+    return statistics.fmean(all_common_stock_equities(balance_sheet))
 
 
 def has_good_return_on_equity(ticker, verbose=False):
