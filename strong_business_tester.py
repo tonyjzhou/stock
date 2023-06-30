@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import math
+import statistics
 from datetime import datetime
 
 from yahooquery import Ticker
@@ -45,13 +46,7 @@ def average_free_cash_flow(ticker, verbose=False):
         print(f"No FreeCashFlow data available for {ticker.symbols}")
         return 0
 
-    free_cash_flows = all_free_cash_flows(cash_flow)
-    average_fcf = sum(free_cash_flows) / len(free_cash_flows)
-
-    if verbose:
-        print(f"average_fcf={average_fcf} free_cash_flows={free_cash_flows}")
-
-    return average_fcf
+    return statistics.fmean(all_free_cash_flows(cash_flow))
 
 
 def average_common_stock_equity(ticker):
