@@ -21,13 +21,12 @@ def has_consecutive_positive_fcf(ticker):
         print(f"No FreeCashFlow data available for {ticker.symbols}")
         return False
 
-    free_cash_flows = all_free_cash_flows(cash_flow)
-    return all([v > 0 for v in free_cash_flows.values()])
+    return all([v > 0 for v in (all_free_cash_flows(cash_flow))])
 
 
 def all_free_cash_flows(cash_flow):
     free_cash_flows = cash_flow[['asOfDate', 'FreeCashFlow']].set_index('asOfDate')
-    return free_cash_flows.to_dict()['FreeCashFlow']
+    return strip_nan(free_cash_flows.to_dict()['FreeCashFlow'].values())
 
 
 def all_common_stock_equities(balance_sheet):
@@ -46,7 +45,7 @@ def average_free_cash_flow(ticker, verbose=False):
         print(f"No FreeCashFlow data available for {ticker.symbols}")
         return 0
 
-    free_cash_flows = strip_nan(all_free_cash_flows(cash_flow).values())
+    free_cash_flows = all_free_cash_flows(cash_flow)
     average_fcf = sum(free_cash_flows) / len(free_cash_flows)
 
     if verbose:
