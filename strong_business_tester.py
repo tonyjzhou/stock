@@ -72,7 +72,7 @@ def has_good_return_on_equity(ticker, verbose=False):
     return average_roe > 0.13
 
 
-def has_consistently_low_debt_ratios(debt_equity_ratio_values, threshold=2.4):
+def has_consistently_low_debt_ratios(debt_equity_ratio_values, threshold=3):
     return all([v < threshold for v in debt_equity_ratio_values])
 
 
@@ -109,10 +109,10 @@ def test_strong_business(symbol, verbose):
         insert_data(symbol, datetime.now())
 
         ticker = Ticker(symbol)
-        if not has_consecutive_positive_fcf(ticker):
-            if verbose:
-                print(f"{ticker.symbols} doesn't have consecutive positive fcf")
-            return False
+        # if not has_consecutive_positive_fcf(ticker):
+        #     if verbose:
+        #         print(f"{ticker.symbols} doesn't have consecutive positive fcf")
+        #     return False
 
         if not has_good_return_on_equity(ticker, verbose=verbose):
             if verbose:
