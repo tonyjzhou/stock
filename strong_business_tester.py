@@ -62,6 +62,11 @@ def average_common_stock_equity(ticker):
 
 def has_good_return_on_equity(ticker, verbose=False):
     average_fcf = average_free_cash_flow(ticker, verbose=verbose)
+    if average_fcf < 0:
+        if verbose:
+            print(f"{ticker.symbols} has negative average_fcf: {average_fcf}")
+        return False
+
     average_cse = average_common_stock_equity(ticker)
 
     average_roe = average_fcf / average_cse
@@ -103,7 +108,7 @@ def has_processed(symbol):
 
 def test_strong_business(symbol, verbose):
     if has_processed(symbol):
-        print(f"{symbol} has already been processed")
+        print(f"{symbol} has already been processed\n")
         return False
     else:
         insert_data(symbol, datetime.now())
@@ -124,7 +129,7 @@ def test_strong_business(symbol, verbose):
                 print(f"{ticker.symbols} doesn't have strong balance sheet")
             return False
 
-        print(f"{ticker.symbols} has a strong business")
+        print(f"{ticker.symbols} has a strong business\n")
         return True
 
 
@@ -138,7 +143,6 @@ def main():
         for line in file:
             symbol = line.strip()
             test_strong_business(symbol, args.verbose)
-            print()
 
 
 if __name__ == '__main__':
