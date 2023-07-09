@@ -89,7 +89,24 @@ def has_consistently_low_debt_ratios(debt_equity_ratio_values, threshold=3):
 
 def has_strong_balance_sheet(ticker, verbose):
     balance_sheet = ticker.balance_sheet(frequency='Quarterly')
-    balance_sheet['TotalDebt/CommonStockEquity'] = balance_sheet['TotalDebt'] / balance_sheet['CommonStockEquity']
+
+    if isinstance(balance_sheet, str):
+        if verbose:
+            print(f"Error: balance sheet for {ticker.symbols} is a string: {balance_sheet}")
+        return False
+
+    if balance_sheet is None or balance_sheet.empty or 'CommonStockEquity' not in balance_sheet.columns:
+        if verbose:
+            print(f"No CommonStockEquity data available for {ticker.symbols}")
+        return False
+
+    try:
+        balance_sheet['TotalDebt/CommonStockEquity'] = balance_sheet['TotalDebt'] / balance_sheet['CommonStockEquity']
+    except KeyError:
+        if verbose:
+            print(f"Required data missing in balance sheet for {ticker.symbols}")
+        return False
+
     debt_equity_ratio = balance_sheet[['asOfDate', 'TotalDebt/CommonStockEquity']]
     debt_equity_ratio = debt_equity_ratio.set_index('asOfDate').to_dict()['TotalDebt/CommonStockEquity']
     debt_equity_ratio_values = list(debt_equity_ratio.values())
