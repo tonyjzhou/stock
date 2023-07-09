@@ -154,7 +154,7 @@ def test_strong_business(symbol, verbose):
                 print(f"{ticker.symbols} doesn't have strong balance sheet")
             return False
 
-        print(f"{ticker.symbols} has a strong business with ROE: {roe}\n")
+        print(f"{ticker.symbols} has a strong business with ROE: {round(roe * 100, 2)}%\n")
         return True
 
 
