@@ -67,20 +67,20 @@ def has_good_return_on_equity(ticker, verbose=False):
     if average_fcf <= 0:
         if verbose:
             print(f"{ticker.symbols} has non-positive average_fcf: {average_fcf}")
-        return False
+        return False, 0
 
     average_cse = average_common_stock_equity(ticker)
     if average_cse <= 0:
         if verbose:
             print(f"{ticker.symbols} has non-positive average_cse: {average_cse}")
-        return False
+        return False, 0
 
     average_roe = average_fcf / average_cse
 
     if verbose:
         print(f"{ticker.symbols} average_roe={average_roe}")
 
-    return average_roe > 0.13
+    return average_roe > 0.13, average_roe
 
 
 def has_consistently_low_debt_ratios(debt_equity_ratio_values, threshold=3):
@@ -142,7 +142,9 @@ def test_strong_business(symbol, verbose):
         #         print(f"{ticker.symbols} doesn't have consecutive positive fcf")
         #     return False
 
-        if not has_good_return_on_equity(ticker, verbose=verbose):
+        good_roe, roe = has_good_return_on_equity(ticker, verbose=verbose)
+
+        if not good_roe:
             if verbose:
                 print(f"{ticker.symbols} doesn't have good return on equity")
             return False
@@ -152,7 +154,7 @@ def test_strong_business(symbol, verbose):
                 print(f"{ticker.symbols} doesn't have strong balance sheet")
             return False
 
-        print(f"{ticker.symbols} has a strong business\n")
+        print(f"{ticker.symbols} has a strong business with ROE: {roe}\n")
         return True
 
 
