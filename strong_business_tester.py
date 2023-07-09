@@ -43,18 +43,20 @@ def average_free_cash_flow(ticker, verbose=False):
     cash_flow = ticker.cash_flow(frequency='Annual')
 
     if cash_flow is None or isinstance(cash_flow, str) or cash_flow.empty or 'FreeCashFlow' not in cash_flow.columns:
-        print(f"No FreeCashFlow data available for {ticker.symbols}")
+        if verbose:
+            print(f"No FreeCashFlow data available for {ticker.symbols}")
         return 0
 
     return statistics.fmean(all_free_cash_flows(cash_flow))
 
 
-def average_common_stock_equity(ticker):
+def average_common_stock_equity(ticker, verbose=False):
     balance_sheet = ticker.balance_sheet(frequency='Annual')
 
     if balance_sheet is None or isinstance(balance_sheet,
                                            str) or balance_sheet.empty or 'CommonStockEquity' not in balance_sheet.columns:
-        print(f"No CommonStockEquity data available for {ticker.symbols}")
+        if verbose:
+            print(f"No CommonStockEquity data available for {ticker.symbols}")
         return 0
 
     return statistics.fmean(all_common_stock_equities(balance_sheet))
@@ -62,12 +64,16 @@ def average_common_stock_equity(ticker):
 
 def has_good_return_on_equity(ticker, verbose=False):
     average_fcf = average_free_cash_flow(ticker, verbose=verbose)
-    if average_fcf < 0:
+    if average_fcf <= 0:
         if verbose:
-            print(f"{ticker.symbols} has negative average_fcf: {average_fcf}")
+            print(f"{ticker.symbols} has non-positive average_fcf: {average_fcf}")
         return False
 
     average_cse = average_common_stock_equity(ticker)
+    if average_cse <= 0:
+        if verbose:
+            print(f"{ticker.symbols} has non-positive average_cse: {average_cse}")
+        return False
 
     average_roe = average_fcf / average_cse
 
