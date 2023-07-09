@@ -166,6 +166,8 @@ def main():
         for line in file:
             symbol = line.strip()
             test_strong_business(symbol, args.verbose)
+            print(".", end="")
+    print()
 
 
 if __name__ == '__main__':
