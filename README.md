@@ -41,7 +41,7 @@ jupyter lab
 
 1. Calculate volatility as 52-week high / 52-week low
 2. Give a summary of all selected stocks with key metrics in a tabular format
-3. Eliminate companies with negative "Common Stock Equity"
+3. ~~Eliminate companies with negative "Common Stock Equity"~~
 4. Check if a business is cheap enough
     1. Compare Equity to Market Cap
     2. Compare average FCF to Market Cap

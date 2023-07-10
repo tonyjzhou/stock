@@ -59,7 +59,15 @@ def average_common_stock_equity(ticker, verbose=False):
             print(f"No CommonStockEquity data available for {ticker.symbols}")
         return 0
 
-    return statistics.fmean(all_common_stock_equities(balance_sheet))
+    common_stock_equities = all_common_stock_equities(balance_sheet)
+
+    # Check if any equity value is negative
+    if any(equity < 0 for equity in common_stock_equities):
+        if verbose:
+            print(f"{ticker.symbols} has negative Common Stock Equity.")
+        return 0  # Return 0, indicating not a strong business
+
+    return statistics.fmean(common_stock_equities)
 
 
 def has_good_return_on_equity(ticker, verbose=False):
