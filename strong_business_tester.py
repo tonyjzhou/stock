@@ -137,7 +137,29 @@ def has_processed(symbol):
     return (datetime.now() - tested_at).days < 365
 
 
-def test_strong_business(symbol, verbose):
+def is_volatile(ticker, symbol, threshold=0.5, verbose=False):
+    summary_detail = ticker.summary_detail[symbol]
+
+    if not isinstance(summary_detail, dict):
+        if verbose:
+            print(f"Error: summary detail for {symbol} is not a dictionary: {summary_detail}")
+        return False, 0
+
+    if 'fiftyTwoWeekLow' not in summary_detail or 'fiftyTwoWeekHigh' not in summary_detail:
+        if verbose:
+            print(f"Error: Required data missing in summary detail for {symbol}")
+        return False, 0
+
+    fifty_two_week_low = summary_detail['fiftyTwoWeekLow']
+    fifty_two_week_high = summary_detail['fiftyTwoWeekHigh']
+    fifty_two_week_diff = fifty_two_week_high - fifty_two_week_low
+
+    volatility = fifty_two_week_diff / fifty_two_week_low
+
+    return volatility >= threshold, volatility
+
+
+def test_strong_buy(symbol, verbose):
     if has_processed(symbol):
         print(f"{symbol} has already been processed\n")
         return False
@@ -150,11 +172,18 @@ def test_strong_business(symbol, verbose):
         #         print(f"{ticker.symbols} doesn't have consecutive positive fcf")
         #     return False
 
+        volatile, volatility = is_volatile(ticker, symbol, verbose=verbose)
+
+        if not volatile:
+            if verbose:
+                print(f"{ticker.symbols}  is not volatile enough: {round(volatility * 100, 2)}%")
+            return False
+
         good_roe, roe = has_good_return_on_equity(ticker, verbose=verbose)
 
         if not good_roe:
             if verbose:
-                print(f"{ticker.symbols} doesn't have good return on equity")
+                print(f"{ticker.symbols} doesn't have good return on equity: {round(roe * 100, 2)}%")
             return False
 
         if not has_strong_balance_sheet(ticker, verbose=verbose):
@@ -162,7 +191,8 @@ def test_strong_business(symbol, verbose):
                 print(f"{ticker.symbols} doesn't have strong balance sheet")
             return False
 
-        print(f"{ticker.symbols} has a strong business with ROE: {round(roe * 100, 2)}%\n")
+        print(
+            f"{ticker.symbols} has a strong business with ROE: {round(roe * 100, 2)}%, with high volatility: {round(volatility * 100, 2)}%\n")
         return True
 
 
@@ -175,7 +205,7 @@ def main():
     with open("tickers.txt", "r") as file:
         for line in file:
             symbol = line.strip()
-            test_strong_business(symbol, args.verbose)
+            test_strong_buy(symbol, args.verbose)
             print(".", end="")
     print()
 
