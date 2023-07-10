@@ -38,25 +38,25 @@ jupyter lab
 ## What?
 
 ### Todo
-1. Give a summary of all selected stocks with key metrics in a tabular format
-2. Check if a business is cheap enough
+1. Check if a business is cheap enough
     1. Compare Equity to Market Cap
     2. Compare average FCF to Market Cap
-3. Don't store business that's strong but not cheap enough
-4. Enable comparisons of multiple data sources: Yahoo Finance, https://www.macrotrends.net/ , https://www.barrons.com/
-5. Add a comparison between similar stocks in Strong business tester
-6. Make it a web application
-7. Enable extracting data with the name of a company
+2. Don't store business that's strong but not cheap enough
+3. Enable comparisons of multiple data sources: Yahoo Finance, https://www.macrotrends.net/ , https://www.barrons.com/
+4. Add a comparison between similar stocks in Strong business tester
+5. Make it a web application
+6. Enable extracting data with the name of a company
    from https://www.barrons.com/market-data/stocks/new-fifty-two-week-highs-lows
-8. When storing a company's symbol and the current datetime in the database, you could also store the results of the
+7. When storing a company's symbol and the current datetime in the database, you could also store the results of the
    checks. This way, if you need to check a company's data again later, you can just query the database instead of
    having to fetch and process the data again.
-9. Use multithreading or asynchronous programming to fetch and process data for multiple companies concurrently. This
+8. Use multithreading or asynchronous programming to fetch and process data for multiple companies concurrently. This
    would be especially beneficial if the list of companies is large, as the program would not need to wait for each
    company's data to be fetched and processed before moving on to the next one.
-10. Filter out OTC shares
+9. Filter out OTC shares
 
 ### Done
+* ~~Give a summary of all selected stocks with key metrics in a tabular format~~
 * ~~Calculate volatility as 52-week high / 52-week low~~
 * ~~Check if a business is good: average FCF / average Equity >= x%~~
 * ~~Eliminate companies with negative "Common Stock Equity"~~

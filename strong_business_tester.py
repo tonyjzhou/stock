@@ -4,6 +4,7 @@ import math
 import statistics
 from datetime import datetime
 
+from tabulate import tabulate
 from yahooquery import Ticker
 
 from database import insert_data, read_data
@@ -172,38 +173,36 @@ def is_volatile(ticker, symbol, threshold=0.5, verbose=False):
 def test_strong_buy(symbol, verbose):
     if has_processed(symbol):
         print(f"{symbol} has already been processed\n")
-        return False
+        return None  # Return None if already processed
     else:
         insert_data(symbol, datetime.now())
 
         ticker = Ticker(symbol)
-        # if not has_consecutive_positive_fcf(ticker):
-        #     if verbose:
-        #         print(f"{ticker.symbols} doesn't have consecutive positive fcf")
-        #     return False
 
         volatile, volatility = is_volatile(ticker, symbol, verbose=verbose)
 
         if not volatile:
             if verbose:
                 print(f"{ticker.symbols}  is not volatile enough: {round(volatility * 100, 2)}%")
-            return False
+            return None  # Return None if not volatile
 
         good_roe, roe = has_good_return_on_equity(ticker, verbose=verbose)
 
         if not good_roe:
             if verbose:
                 print(f"{ticker.symbols} doesn't have good return on equity: {round(roe * 100, 2)}%")
-            return False
+            return None  # Return None if ROE not good
 
         if not has_strong_balance_sheet(ticker, verbose=verbose):
             if verbose:
                 print(f"{ticker.symbols} doesn't have strong balance sheet")
-            return False
+            return None  # Return None if balance sheet not strong
 
         print(
             f"{ticker.symbols} has a strong business with ROE: {round(roe * 100, 2)}%, with high volatility: {round(volatility * 100, 2)}%\n")
-        return True
+
+        return {'Symbol': ticker.symbols, 'ROE': round(roe * 100, 2),
+                'Volatility': round(volatility * 100, 2)}  # Return the data as a dictionary
 
 
 def main():
@@ -212,12 +211,18 @@ def main():
                         help='only print stocks with a strong business')
     args = parser.parse_args()
 
+    strong_businesses = []  # List to store businesses that pass the checks
+
     with open("tickers.txt", "r") as file:
         for line in file:
             symbol = line.strip()
-            test_strong_buy(symbol, args.verbose)
+            is_strong = test_strong_buy(symbol, args.verbose)
+            if is_strong:
+                strong_businesses.append(is_strong)
             print(".", end="")
     print()
+
+    print(tabulate(strong_businesses, headers="keys"))  # Print the data in tabular format
 
 
 if __name__ == '__main__':

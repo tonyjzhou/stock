@@ -3,3 +3,4 @@ yahooquery
 yfinance
 pandas-datareader
 matplotlib
+tabulate
