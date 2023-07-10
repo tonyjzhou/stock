@@ -138,7 +138,17 @@ def has_processed(symbol):
 
 
 def is_volatile(ticker, symbol, threshold=0.5, verbose=False):
+    if symbol not in ticker.summary_detail:
+        if verbose:
+            print(f"Error: No summary detail found for {symbol}")
+        return False, 0
+
     summary_detail = ticker.summary_detail[symbol]
+
+    if summary_detail is None:
+        if verbose:
+            print(f"Error: No summary detail found for {symbol}")
+        return False, 0
 
     if not isinstance(summary_detail, dict):
         if verbose:
