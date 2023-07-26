@@ -221,6 +221,9 @@ def main():
             print(".", end="")
     print()
 
+    # Sort strong_businesses by ROE in descending order
+    strong_businesses.sort(key=lambda x: x['ROE'], reverse=True)
+
     print(tabulate(strong_businesses, headers="keys"))  # Print the data in tabular format
 
 
