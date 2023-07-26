@@ -179,12 +179,12 @@ def test_strong_buy(symbol, verbose):
 
         ticker = Ticker(symbol)
 
-        volatile, volatility = is_volatile(ticker, symbol, verbose=verbose)
-
-        if not volatile:
-            if verbose:
-                print(f"{ticker.symbols}  is not volatile enough: {round(volatility * 100, 2)}%")
-            return None  # Return None if not volatile
+        # volatile, volatility = is_volatile(ticker, symbol, verbose=verbose)
+        #
+        # if not volatile:
+        #     if verbose:
+        #         print(f"{ticker.symbols}  is not volatile enough: {round(volatility * 100, 2)}%")
+        #     return None  # Return None if not volatile
 
         good_roe, roe = has_good_return_on_equity(ticker, verbose=verbose)
 
@@ -199,10 +199,9 @@ def test_strong_buy(symbol, verbose):
             return None  # Return None if balance sheet not strong
 
         print(
-            f"{ticker.symbols} has a strong business with ROE: {round(roe * 100, 2)}%, with high volatility: {round(volatility * 100, 2)}%\n")
+            f"{ticker.symbols} has a strong business with ROE: {round(roe * 100, 2)}%\n")
 
-        return {'Symbol': ticker.symbols, 'ROE': round(roe * 100, 2),
-                'Volatility': round(volatility * 100, 2)}  # Return the data as a dictionary
+        return {'Symbol': ticker.symbols, 'ROE': round(roe * 100, 2)}  # Return the data as a dictionary
 
 
 def main():
