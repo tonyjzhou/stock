@@ -93,7 +93,7 @@ def has_good_return_on_equity(ticker, verbose=False):
 
 
 def has_consistently_low_debt_ratios(debt_equity_ratio_values, threshold=3):
-    return all([v < threshold for v in debt_equity_ratio_values])
+    return all([v < threshold or math.isnan(v) for v in debt_equity_ratio_values])
 
 
 def has_strong_balance_sheet(ticker, verbose):
