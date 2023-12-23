@@ -1,3 +1,4 @@
+import logging
 import sqlite3
 
 
@@ -7,46 +8,76 @@ class DatabaseManager:
         self.conn = None
 
     def __enter__(self):
-        self.conn = sqlite3.connect(self.db_path)
+        try:
+            self.conn = sqlite3.connect(self.db_path)
+        except sqlite3.Error as e:
+            logging.error(f"Error connecting to database: {e}")
+            raise
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         if self.conn:
-            self.conn.close()
+            try:
+                self.conn.close()
+            except sqlite3.Error as e:
+                logging.error(f"Error closing database connection: {e}")
+                raise
 
     def create_table(self):
-        with self.conn:
-            cursor = self.conn.cursor()
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS stocks
-                (symbol TEXT PRIMARY KEY, 
-                tested_at DATETIME NOT NULL)
-            ''')
+        try:
+            with self.conn:
+                cursor = self.conn.cursor()
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS stocks
+                    (symbol TEXT PRIMARY KEY, 
+                    tested_at DATETIME NOT NULL)
+                ''')
+        except sqlite3.Error as e:
+            logging.error(f"Error creating table: {e}")
+            raise
 
     def insert_data(self, symbol, tested_at):
-        with self.conn:
-            cursor = self.conn.cursor()
-            cursor.execute("INSERT INTO stocks VALUES (?, ?)", (symbol, tested_at))
+        try:
+            with self.conn:
+                cursor = self.conn.cursor()
+                cursor.execute("INSERT INTO stocks VALUES (?, ?)", (symbol, tested_at))
+        except sqlite3.IntegrityError:
+            logging.warning(f"Record with symbol {symbol} already exists.")
+        except sqlite3.Error as e:
+            logging.error(f"Error inserting data: {e}")
+            raise
 
     def update_data(self, symbol, tested_at):
-        with self.conn:
-            cursor = self.conn.cursor()
-            cursor.execute("UPDATE stocks SET tested_at = ? WHERE symbol = ?", (tested_at, symbol))
+        try:
+            with self.conn:
+                cursor = self.conn.cursor()
+                cursor.execute("UPDATE stocks SET tested_at = ? WHERE symbol = ?", (tested_at, symbol))
+        except sqlite3.Error as e:
+            logging.error(f"Error updating data: {e}")
+            raise
 
     def delete_data(self, symbol):
-        with self.conn:
-            cursor = self.conn.cursor()
-            cursor.execute("DELETE from stocks WHERE symbol = ?", (symbol,))
+        try:
+            with self.conn:
+                cursor = self.conn.cursor()
+                cursor.execute("DELETE from stocks WHERE symbol = ?", (symbol,))
+        except sqlite3.Error as e:
+            logging.error(f"Error deleting data: {e}")
+            raise
 
     def read_data(self, symbol=None):
-        cursor = self.conn.cursor()
-        query = "SELECT * FROM stocks"
-        if symbol:
-            query += " WHERE symbol = ?"
-            cursor.execute(query, (symbol,))
-        else:
-            cursor.execute(query)
-        return cursor.fetchall()
+        try:
+            cursor = self.conn.cursor()
+            query = "SELECT * FROM stocks"
+            if symbol:
+                query += " WHERE symbol = ?"
+                cursor.execute(query, (symbol,))
+            else:
+                cursor.execute(query)
+            return cursor.fetchall()
+        except sqlite3.Error as e:
+            logging.error(f"Error reading data: {e}")
+            raise
 
 
 def refresh():
@@ -69,7 +100,8 @@ def test_run():
 
 
 def main():
-    test_run()
+    # test_run()
+    refresh()
 
 
 if __name__ == '__main__':
