@@ -1,6 +1,9 @@
 import logging
 import sqlite3
 
+# Set up basic logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 class DatabaseManager:
     def __init__(self, db_path='test.db'):
@@ -61,6 +64,7 @@ class DatabaseManager:
             with self.conn:
                 cursor = self.conn.cursor()
                 cursor.execute("DELETE from stocks WHERE symbol = ?", (symbol,))
+                logging.info(f"Deleted {symbol}")
         except sqlite3.Error as e:
             logging.error(f"Error deleting data: {e}")
             raise
@@ -92,11 +96,11 @@ def test_run():
     with DatabaseManager('test.db') as db:
         db.create_table()
         db.insert_data('AAPL', '2023-12-22')
-        print(db.read_data('AAPL'))
+        logging.info(db.read_data('AAPL'))
         db.update_data('AAPL', '2023-12-23')
-        print(db.read_data('AAPL'))
+        logging.info(db.read_data('AAPL'))
         db.delete_data('AAPL')
-        print(db.read_data())
+        logging.info(db.read_data())
 
 
 def main():

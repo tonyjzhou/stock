@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import argparse
+import logging
 import math
 import statistics
 from datetime import datetime
@@ -9,26 +10,38 @@ from yahooquery import Ticker
 
 from database import DatabaseManager
 
+# Set up basic logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 def has_consecutive_positive_fcf(ticker):
     """
-    This filter will rule out Amazon and MU as strong business because they have negative FCF in some years.
+    Check if a given ticker has consecutive years of positive free cash flow (FCF).
 
-    :param ticker:
-    :return:
+    :param ticker: Ticker symbol
+    :return: Boolean indicating whether the ticker has consecutive positive FCF
     """
-    cash_flow = ticker.cash_flow(frequency='Annual')
+    try:
+        cash_flow = ticker.cash_flow(frequency='Annual')
 
-    if cash_flow is None or isinstance(cash_flow, str) or cash_flow.empty or 'FreeCashFlow' not in cash_flow.columns:
-        print(f"No FreeCashFlow data available for {ticker.symbols}")
+        if cash_flow is None or isinstance(cash_flow,
+                                           str) or cash_flow.empty or 'FreeCashFlow' not in cash_flow.columns:
+            logging.warning(f"No FreeCashFlow data available for {ticker.symbols}")
+            return False
+
+        return all([v > 0 for v in (all_free_cash_flows(cash_flow))])
+    except Exception as e:
+        logging.error(f"Error in processing FCF data for {ticker.symbols}: {e}")
         return False
-
-    return all([v > 0 for v in (all_free_cash_flows(cash_flow))])
 
 
 def all_free_cash_flows(cash_flow):
-    free_cash_flows = cash_flow[['asOfDate', 'FreeCashFlow']].set_index('asOfDate')
-    return strip_nan(free_cash_flows.to_dict()['FreeCashFlow'].values())
+    try:
+        free_cash_flows = cash_flow[['asOfDate', 'FreeCashFlow']].set_index('asOfDate')
+        return strip_nan(free_cash_flows.to_dict()['FreeCashFlow'].values())
+    except Exception as e:
+        logging.error(f"Error in extracting free cash flows: {e}")
+        return []
 
 
 def all_common_stock_equities(balance_sheet):
