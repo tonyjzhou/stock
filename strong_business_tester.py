@@ -17,18 +17,13 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def has_consecutive_positive_fcf(ticker):
     """
     Check if a given ticker has consecutive years of positive free cash flow (FCF).
-
-    :param ticker: Ticker symbol
-    :return: Boolean indicating whether the ticker has consecutive positive FCF
     """
     try:
         cash_flow = ticker.cash_flow(frequency='Annual')
-
         if cash_flow is None or isinstance(cash_flow,
                                            str) or cash_flow.empty or 'FreeCashFlow' not in cash_flow.columns:
             logging.warning(f"No FreeCashFlow data available for {ticker.symbols}")
             return False
-
         return all([v > 0 for v in (all_free_cash_flows(cash_flow))])
     except Exception as e:
         logging.error(f"Error in processing FCF data for {ticker.symbols}: {e}")
@@ -54,14 +49,16 @@ def strip_nan(ns):
 
 
 def average_free_cash_flow(ticker, verbose=False):
-    cash_flow = ticker.cash_flow(frequency='Annual')
-
-    if cash_flow is None or isinstance(cash_flow, str) or cash_flow.empty or 'FreeCashFlow' not in cash_flow.columns:
-        if verbose:
-            print(f"No FreeCashFlow data available for {ticker.symbols}")
+    try:
+        cash_flow = ticker.cash_flow(frequency='Annual')
+        if cash_flow is None or isinstance(cash_flow,
+                                           str) or cash_flow.empty or 'FreeCashFlow' not in cash_flow.columns:
+            logging.warning(f"No FreeCashFlow data available for {ticker.symbols}") if verbose else None
+            return 0
+        return statistics.fmean(all_free_cash_flows(cash_flow))
+    except Exception as e:
+        logging.error(f"Error calculating average FCF for {ticker.symbols}: {e}")
         return 0
-
-    return statistics.fmean(all_free_cash_flows(cash_flow))
 
 
 def average_common_stock_equity(ticker, verbose=False):
@@ -70,7 +67,7 @@ def average_common_stock_equity(ticker, verbose=False):
     if balance_sheet is None or isinstance(balance_sheet,
                                            str) or balance_sheet.empty or 'CommonStockEquity' not in balance_sheet.columns:
         if verbose:
-            print(f"No CommonStockEquity data available for {ticker.symbols}")
+            logging.info(f"No CommonStockEquity data available for {ticker.symbols}")
         return 0
 
     common_stock_equities = all_common_stock_equities(balance_sheet)
@@ -78,7 +75,7 @@ def average_common_stock_equity(ticker, verbose=False):
     # Check if any equity value is negative
     if any(equity < 0 for equity in common_stock_equities):
         if verbose:
-            print(f"{ticker.symbols} has negative Common Stock Equity.")
+            logging.info(f"{ticker.symbols} has negative Common Stock Equity.")
         return 0  # Return 0, indicating not a strong business
 
     return statistics.fmean(common_stock_equities)
@@ -88,19 +85,19 @@ def has_good_return_on_equity(ticker, verbose=False):
     average_fcf = average_free_cash_flow(ticker, verbose=verbose)
     if average_fcf <= 0:
         if verbose:
-            print(f"{ticker.symbols} has non-positive average_fcf: {average_fcf}")
+            logging.info(f"{ticker.symbols} has non-positive average_fcf: {average_fcf}")
         return False, 0
 
     average_cse = average_common_stock_equity(ticker)
     if average_cse <= 0:
         if verbose:
-            print(f"{ticker.symbols} has non-positive average_cse: {average_cse}")
+            logging.info(f"{ticker.symbols} has non-positive average_cse: {average_cse}")
         return False, 0
 
     average_roe = average_fcf / average_cse
 
     if verbose:
-        print(f"{ticker.symbols} average_roe={average_roe}")
+        logging.info(f"{ticker.symbols} average_roe={average_roe}")
 
     return average_roe > 0.13, average_roe
 
@@ -114,19 +111,19 @@ def has_strong_balance_sheet(ticker, verbose):
 
     if isinstance(balance_sheet, str):
         if verbose:
-            print(f"Error: balance sheet for {ticker.symbols} is a string: {balance_sheet}")
+            logging.info(f"Error: balance sheet for {ticker.symbols} is a string: {balance_sheet}")
         return False
 
     if balance_sheet is None or balance_sheet.empty or 'CommonStockEquity' not in balance_sheet.columns:
         if verbose:
-            print(f"No CommonStockEquity data available for {ticker.symbols}")
+            logging.info(f"No CommonStockEquity data available for {ticker.symbols}")
         return False
 
     try:
         balance_sheet['TotalDebt/CommonStockEquity'] = balance_sheet['TotalDebt'] / balance_sheet['CommonStockEquity']
     except KeyError:
         if verbose:
-            print(f"Required data missing in balance sheet for {ticker.symbols}")
+            logging.info(f"Required data missing in balance sheet for {ticker.symbols}")
         return False
 
     debt_equity_ratio = balance_sheet[['asOfDate', 'TotalDebt/CommonStockEquity']]
@@ -135,7 +132,7 @@ def has_strong_balance_sheet(ticker, verbose):
 
     if not has_consistently_low_debt_ratios(debt_equity_ratio_values):
         if verbose:
-            print(f"{ticker.symbols} doesn't have consistently low debt ratios: {debt_equity_ratio_values}")
+            logging.info(f"{ticker.symbols} doesn't have consistently low debt ratios: {debt_equity_ratio_values}")
         return False
 
     return True
@@ -155,24 +152,24 @@ def has_processed(symbol):
 def is_volatile(ticker, symbol, threshold=0.5, verbose=False):
     if symbol not in ticker.summary_detail:
         if verbose:
-            print(f"Error: No summary detail found for {symbol}")
+            logging.info(f"Error: No summary detail found for {symbol}")
         return False, 0
 
     summary_detail = ticker.summary_detail[symbol]
 
     if summary_detail is None:
         if verbose:
-            print(f"Error: No summary detail found for {symbol}")
+            logging.info(f"Error: No summary detail found for {symbol}")
         return False, 0
 
     if not isinstance(summary_detail, dict):
         if verbose:
-            print(f"Error: summary detail for {symbol} is not a dictionary: {summary_detail}")
+            logging.info(f"Error: summary detail for {symbol} is not a dictionary: {summary_detail}")
         return False, 0
 
     if 'fiftyTwoWeekLow' not in summary_detail or 'fiftyTwoWeekHigh' not in summary_detail:
         if verbose:
-            print(f"Error: Required data missing in summary detail for {symbol}")
+            logging.info(f"Error: Required data missing in summary detail for {symbol}")
         return False, 0
 
     fifty_two_week_low = summary_detail['fiftyTwoWeekLow']
@@ -186,7 +183,7 @@ def is_volatile(ticker, symbol, threshold=0.5, verbose=False):
 
 def test_strong_buy(symbol, verbose):
     if has_processed(symbol):
-        print(f"{symbol} has already been processed\n")
+        logging.info(f"{symbol} has already been processed\n")
         return None  # Return None if already processed
     else:
         with DatabaseManager() as db:
@@ -198,22 +195,22 @@ def test_strong_buy(symbol, verbose):
             #
             # if not volatile:
             #     if verbose:
-            #         print(f"{ticker.symbols}  is not volatile enough: {round(volatility * 100, 2)}%")
+            #         logging.info(f"{ticker.symbols}  is not volatile enough: {round(volatility * 100, 2)}%")
             #     return None  # Return None if not volatile
 
             good_roe, roe = has_good_return_on_equity(ticker, verbose=verbose)
 
             if not good_roe:
                 if verbose:
-                    print(f"{ticker.symbols} doesn't have good return on equity: {round(roe * 100, 2)}%")
+                    logging.info(f"{ticker.symbols} doesn't have good return on equity: {round(roe * 100, 2)}%")
                 return None  # Return None if ROE not good
 
             if not has_strong_balance_sheet(ticker, verbose=verbose):
                 if verbose:
-                    print(f"{ticker.symbols} doesn't have strong balance sheet")
+                    logging.info(f"{ticker.symbols} doesn't have strong balance sheet")
                 return None  # Return None if balance sheet not strong
 
-            print(
+            logging.info(
                 f"{ticker.symbols} has a strong business with ROE: {round(roe * 100, 2)}%\n")
 
             return {'Symbol': ticker.symbols, 'ROE': round(roe * 100, 2)}  # Return the data as a dictionary
@@ -221,25 +218,20 @@ def test_strong_buy(symbol, verbose):
 
 def main():
     parser = argparse.ArgumentParser(description='Test if a stock has a strong business.')
-    parser.add_argument('-v', '--verbose', action='store_true',
-                        help='only print stocks with a strong business')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Increase output verbosity')
     args = parser.parse_args()
 
-    strong_businesses = []  # List to store businesses that pass the checks
-
+    strong_businesses = []
     with open("tickers.txt", "r") as file:
         for line in file:
             symbol = line.strip()
             is_strong = test_strong_buy(symbol, args.verbose)
             if is_strong:
                 strong_businesses.append(is_strong)
-            print(".", end="")
-    print()
+            logging.info(f"Processed ticker: {symbol}")
 
-    # Sort strong_businesses by ROE in descending order
     strong_businesses.sort(key=lambda x: x['ROE'], reverse=True)
-
-    print(tabulate(strong_businesses, headers="keys"))  # Print the data in tabular format
+    logging.info(f'\n{tabulate(strong_businesses, headers="keys")}')
 
 
 if __name__ == '__main__':
