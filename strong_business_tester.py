@@ -7,7 +7,7 @@ from datetime import datetime
 from tabulate import tabulate
 from yahooquery import Ticker
 
-from database import insert_data, read_data
+from database import DatabaseManager
 
 
 def has_consecutive_positive_fcf(ticker):
@@ -129,13 +129,14 @@ def has_strong_balance_sheet(ticker, verbose):
 
 
 def has_processed(symbol):
-    rows = read_data(symbol)
-    if not rows:
-        return False
+    with DatabaseManager() as db:
+        rows = db.read_data(symbol)
+        if not rows:
+            return False
 
-    symbol, tested_at = rows[0]
-    tested_at = datetime.strptime(tested_at, '%Y-%m-%d %H:%M:%S.%f')
-    return (datetime.now() - tested_at).days < 365
+        symbol, tested_at = rows[0]
+        tested_at = datetime.strptime(tested_at, '%Y-%m-%d %H:%M:%S.%f')
+        return (datetime.now() - tested_at).days < 365
 
 
 def is_volatile(ticker, symbol, threshold=0.5, verbose=False):
@@ -175,33 +176,34 @@ def test_strong_buy(symbol, verbose):
         print(f"{symbol} has already been processed\n")
         return None  # Return None if already processed
     else:
-        insert_data(symbol, datetime.now())
+        with DatabaseManager() as db:
+            db.insert_data(symbol, datetime.now())
 
-        ticker = Ticker(symbol)
+            ticker = Ticker(symbol)
 
-        # volatile, volatility = is_volatile(ticker, symbol, verbose=verbose)
-        #
-        # if not volatile:
-        #     if verbose:
-        #         print(f"{ticker.symbols}  is not volatile enough: {round(volatility * 100, 2)}%")
-        #     return None  # Return None if not volatile
+            # volatile, volatility = is_volatile(ticker, symbol, verbose=verbose)
+            #
+            # if not volatile:
+            #     if verbose:
+            #         print(f"{ticker.symbols}  is not volatile enough: {round(volatility * 100, 2)}%")
+            #     return None  # Return None if not volatile
 
-        good_roe, roe = has_good_return_on_equity(ticker, verbose=verbose)
+            good_roe, roe = has_good_return_on_equity(ticker, verbose=verbose)
 
-        if not good_roe:
-            if verbose:
-                print(f"{ticker.symbols} doesn't have good return on equity: {round(roe * 100, 2)}%")
-            return None  # Return None if ROE not good
+            if not good_roe:
+                if verbose:
+                    print(f"{ticker.symbols} doesn't have good return on equity: {round(roe * 100, 2)}%")
+                return None  # Return None if ROE not good
 
-        if not has_strong_balance_sheet(ticker, verbose=verbose):
-            if verbose:
-                print(f"{ticker.symbols} doesn't have strong balance sheet")
-            return None  # Return None if balance sheet not strong
+            if not has_strong_balance_sheet(ticker, verbose=verbose):
+                if verbose:
+                    print(f"{ticker.symbols} doesn't have strong balance sheet")
+                return None  # Return None if balance sheet not strong
 
-        print(
-            f"{ticker.symbols} has a strong business with ROE: {round(roe * 100, 2)}%\n")
+            print(
+                f"{ticker.symbols} has a strong business with ROE: {round(roe * 100, 2)}%\n")
 
-        return {'Symbol': ticker.symbols, 'ROE': round(roe * 100, 2)}  # Return the data as a dictionary
+            return {'Symbol': ticker.symbols, 'ROE': round(roe * 100, 2)}  # Return the data as a dictionary
 
 
 def main():
