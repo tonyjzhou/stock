@@ -14,20 +14,28 @@ from database import DatabaseManager
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-def has_consecutive_positive_fcf(ticker):
+def fetch_financial_data(ticker, data_type, frequency='Annual'):
     """
-    Check if a given ticker has consecutive years of positive free cash flow (FCF).
+    Fetch financial data for a given ticker.
+
+    :param ticker: Ticker object from yahooquery.
+    :param data_type: Type of financial data to fetch (e.g., 'cash_flow', 'balance_sheet').
+    :param frequency: Frequency of the data ('Annual' or 'Quarterly').
+    :return: Fetched data or None if unavailable or in case of an error.
     """
     try:
-        cash_flow = ticker.cash_flow(frequency='Annual')
-        if cash_flow is None or isinstance(cash_flow,
-                                           str) or cash_flow.empty or 'FreeCashFlow' not in cash_flow.columns:
-            logging.warning(f"No FreeCashFlow data available for {ticker.symbols}")
-            return False
-        return all([v > 0 for v in (all_free_cash_flows(cash_flow))])
+        data = getattr(ticker, data_type)(frequency=frequency)
+        if data is None or isinstance(data, str) or data.empty:
+            logging.warning(f"No {data_type} data available for {ticker.symbols}")
+            return None
+        return data
     except Exception as e:
-        logging.error(f"Error in processing FCF data for {ticker.symbols}: {e}")
-        return False
+        logging.error(f"Error fetching {data_type} data for {ticker.symbols}: {e}")
+        return None
+
+
+def strip_nan(ns):
+    return [n for n in ns if not math.isnan(n)]
 
 
 def all_free_cash_flows(cash_flow):
@@ -40,49 +48,44 @@ def all_free_cash_flows(cash_flow):
 
 
 def all_common_stock_equities(balance_sheet):
-    common_stock_equities = balance_sheet[['asOfDate', 'CommonStockEquity']].set_index('asOfDate')
-    return strip_nan(common_stock_equities.to_dict()['CommonStockEquity'].values())
-
-
-def strip_nan(ns):
-    return [n for n in ns if not math.isnan(n)]
-
-
-def average_free_cash_flow(ticker, verbose=False):
     try:
-        cash_flow = ticker.cash_flow(frequency='Annual')
-        if cash_flow is None or isinstance(cash_flow,
-                                           str) or cash_flow.empty or 'FreeCashFlow' not in cash_flow.columns:
-            logging.warning(f"No FreeCashFlow data available for {ticker.symbols}") if verbose else None
-            return 0
+        common_stock_equities = balance_sheet[['asOfDate', 'CommonStockEquity']].set_index('asOfDate')
+        return strip_nan(common_stock_equities.to_dict()['CommonStockEquity'].values())
+    except Exception as e:
+        logging.error(f"Error in extracting common stock equities: {e}")
+        return []
+
+
+def has_consecutive_positive_fcf(ticker):
+    cash_flow = fetch_financial_data(ticker, 'cash_flow')
+    if cash_flow is None:
+        return False
+    return all([v > 0 for v in (all_free_cash_flows(cash_flow))])
+
+
+def average_free_cash_flow(ticker):
+    cash_flow = fetch_financial_data(ticker, 'cash_flow')
+    if cash_flow is None:
+        return 0
+    try:
         return statistics.fmean(all_free_cash_flows(cash_flow))
     except Exception as e:
         logging.error(f"Error calculating average FCF for {ticker.symbols}: {e}")
         return 0
 
 
-def average_common_stock_equity(ticker, verbose=False):
-    balance_sheet = ticker.balance_sheet(frequency='Annual')
-
-    if balance_sheet is None or isinstance(balance_sheet,
-                                           str) or balance_sheet.empty or 'CommonStockEquity' not in balance_sheet.columns:
-        if verbose:
-            logging.info(f"No CommonStockEquity data available for {ticker.symbols}")
+def average_common_stock_equity(ticker):
+    balance_sheet = fetch_financial_data(ticker, 'balance_sheet')
+    if balance_sheet is None:
         return 0
-
     common_stock_equities = all_common_stock_equities(balance_sheet)
-
-    # Check if any equity value is negative
     if any(equity < 0 for equity in common_stock_equities):
-        if verbose:
-            logging.info(f"{ticker.symbols} has negative Common Stock Equity.")
-        return 0  # Return 0, indicating not a strong business
-
+        return 0
     return statistics.fmean(common_stock_equities)
 
 
 def has_good_return_on_equity(ticker, verbose=False):
-    average_fcf = average_free_cash_flow(ticker, verbose=verbose)
+    average_fcf = average_free_cash_flow(ticker)
     if average_fcf <= 0:
         if verbose:
             logging.info(f"{ticker.symbols} has non-positive average_fcf: {average_fcf}")
