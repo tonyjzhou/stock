@@ -159,7 +159,7 @@ def is_volatile(ticker, symbol, threshold=0.5, verbose=False):
 
 def test_strong_buy(symbol, verbose):
     if has_processed(symbol):
-        logging.info(f"{symbol} has already been processed\n")
+        logging.info(f"{symbol} has already been processed")
         return None  # Return None if already processed
     else:
         with DatabaseManager() as db:
@@ -206,8 +206,9 @@ def main():
                 strong_businesses.append(is_strong)
             logging.info(f"Processed ticker: {symbol}")
 
-    strong_businesses.sort(key=lambda x: x['ROE'], reverse=True)
-    logging.info(f'\n{tabulate(strong_businesses, headers="keys")}')
+    if strong_businesses:
+        strong_businesses.sort(key=lambda x: x['ROE'], reverse=True)
+        logging.info(f'\n{tabulate(strong_businesses, headers="keys")}')
 
 
 if __name__ == '__main__':
