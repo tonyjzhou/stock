@@ -17,11 +17,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def fetch_financial_data(ticker, data_type, frequency='Annual'):
     """
     Fetch financial data for a given ticker.
-
-    :param ticker: Ticker object from yahooquery.
-    :param data_type: Type of financial data to fetch (e.g., 'cash_flow', 'balance_sheet').
-    :param frequency: Frequency of the data ('Annual' or 'Quarterly').
-    :return: Fetched data or None if unavailable or in case of an error.
     """
     try:
         data = getattr(ticker, data_type)(frequency=frequency)
@@ -38,70 +33,48 @@ def strip_nan(ns):
     return [n for n in ns if not math.isnan(n)]
 
 
-def all_free_cash_flows(cash_flow):
+def process_financial_data(data, data_key):
     try:
-        free_cash_flows = cash_flow[['asOfDate', 'FreeCashFlow']].set_index('asOfDate')
-        return strip_nan(free_cash_flows.to_dict()['FreeCashFlow'].values())
+        processed_data = data[['asOfDate', data_key]].set_index('asOfDate')
+        return strip_nan(processed_data.to_dict()[data_key].values())
     except Exception as e:
-        logging.error(f"Error in extracting free cash flows: {e}")
+        logging.error(f"Error in processing data: {e}")
         return []
 
 
-def all_common_stock_equities(balance_sheet):
+def average_financial_metric(ticker, data_type, data_key):
+    data = fetch_financial_data(ticker, data_type)
+    if data is None:
+        return 0
     try:
-        common_stock_equities = balance_sheet[['asOfDate', 'CommonStockEquity']].set_index('asOfDate')
-        return strip_nan(common_stock_equities.to_dict()['CommonStockEquity'].values())
+        return statistics.fmean(process_financial_data(data, data_key))
     except Exception as e:
-        logging.error(f"Error in extracting common stock equities: {e}")
-        return []
+        logging.error(f"Error calculating average for {data_key}: {e}")
+        return 0
 
+
+# Redefine functions like average_free_cash_flow and average_common_stock_equity
+# to use average_financial_metric with appropriate parameters.
 
 def has_consecutive_positive_fcf(ticker):
     cash_flow = fetch_financial_data(ticker, 'cash_flow')
     if cash_flow is None:
         return False
-    return all([v > 0 for v in (all_free_cash_flows(cash_flow))])
-
-
-def average_free_cash_flow(ticker):
-    cash_flow = fetch_financial_data(ticker, 'cash_flow')
-    if cash_flow is None:
-        return 0
-    try:
-        return statistics.fmean(all_free_cash_flows(cash_flow))
-    except Exception as e:
-        logging.error(f"Error calculating average FCF for {ticker.symbols}: {e}")
-        return 0
-
-
-def average_common_stock_equity(ticker):
-    balance_sheet = fetch_financial_data(ticker, 'balance_sheet')
-    if balance_sheet is None:
-        return 0
-    common_stock_equities = all_common_stock_equities(balance_sheet)
-    if any(equity < 0 for equity in common_stock_equities):
-        return 0
-    return statistics.fmean(common_stock_equities)
+    free_cash_flows = process_financial_data(cash_flow, 'FreeCashFlow')
+    return all(v > 0 for v in free_cash_flows)
 
 
 def has_good_return_on_equity(ticker, verbose=False):
-    average_fcf = average_free_cash_flow(ticker)
-    if average_fcf <= 0:
+    average_fcf = average_financial_metric(ticker, 'cash_flow', 'FreeCashFlow')
+    average_cse = average_financial_metric(ticker, 'balance_sheet', 'CommonStockEquity')
+    if average_fcf <= 0 or average_cse <= 0:
         if verbose:
-            logging.info(f"{ticker.symbols} has non-positive average_fcf: {average_fcf}")
-        return False, 0
-
-    average_cse = average_common_stock_equity(ticker)
-    if average_cse <= 0:
-        if verbose:
-            logging.info(f"{ticker.symbols} has non-positive average_cse: {average_cse}")
+            logging.info(f"{ticker.symbols} does not meet ROE criteria: FCF={average_fcf}, CSE={average_cse}")
         return False, 0
 
     average_roe = average_fcf / average_cse
-
     if verbose:
         logging.info(f"{ticker.symbols} average_roe={average_roe}")
-
     return average_roe > 0.13, average_roe
 
 
