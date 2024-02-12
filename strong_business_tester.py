@@ -166,6 +166,8 @@ def test_strong_buy(symbol, verbose):
             db.insert_data(symbol, datetime.now())
 
             ticker = Ticker(symbol)
+            if verbose:
+                logging.info(f"{ticker.symbols}'s exchange is: {ticker.price[symbol]['exchangeName']}")
 
             # volatile, volatility = is_volatile(ticker, symbol, verbose=verbose)
             #
