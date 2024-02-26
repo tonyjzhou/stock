@@ -1,108 +1,44 @@
-# Stock
+# Stock Analysis Project
 
-## Why?
+## Overview
+This Python-based project is designed to assess the financial health and strength of businesses by analyzing key financial metrics. It employs a script that fetches financial data from `yahooquery`, evaluates the strength of businesses based on criteria such as positive free cash flow, good return on equity, strong balance sheet, and low debt ratios, and outputs the analysis in a structured format.
 
-To check if a stock is a worthy investment, I need to
-
-1. compute a set of customized metrics for a stock
-2. compare a stock with its peers
-
-This project provides reusable components for it.
-
-## How?
-
-### Use virtual environment
-
-```commandline
-workon stock
+## Setup
+Ensure Python is installed on your system and install the required dependencies:
 ```
-
-### Install all packages
-
-```commandline
 pip install -r requirements.txt
 ```
 
-### Run Jupyter Lab
+## Usage
+### Database Management
+`database.py` handles database operations, supporting the storage and retrieval of analysis results.
 
-```commandline
+### Financial Analysis
+`strong_business_tester.py` identifies strong businesses by analyzing financial data. The script evaluates companies based on multiple financial health indicators, including consistent positive free cash flow and return on equity above a certain threshold. To use this script:
+```
+python strong_business_tester.py -v
+```
+This command runs the script in verbose mode, printing detailed information about each company analyzed and indicating whether it is considered a strong business.
+
+### Key Functionalities
+- **Free Cash Flow Analysis**: Determines if a company has had consecutive years of positive free cash flow, excluding businesses like Amazon and MU for having negative FCF in some years.
+- **Return on Equity (ROE) Evaluation**: Calculates the average ROE and assesses if it is above a certain threshold, indicating efficient use of equity.
+- **Balance Sheet Strength**: Analyzes the balance sheet for a strong equity position and consistently low debt ratios.
+- **Market Volatility**: (Commented out in the current version) Evaluates the stock's volatility based on its 52-week low and high prices.
+
+### Interactive Notebooks
+Explore the `jupyter` directory for Jupyter notebooks that provide examples of data fetching, analysis, and visualization. Open these notebooks with JupyterLab:
+```
 jupyter lab
 ```
 
-### Run strong business tester
+## Dependencies
+- JupyterLab
+- yahooquery
+- yfinance
+- pandas-datareader
+- matplotlib
+- tabulate
 
-```commandline
-./strong_business_tester.py
-```
-
-## What?
-
-### Todo
-1. Filter out China stocks
-2. Filter out OTC stocks
-3. Check if a business is cheap enough
-    1. Compare Equity to Market Cap
-    2. Compare average FCF to Market Cap
-4. Don't store business that's strong but not cheap enough
-5. Enable comparisons of multiple data sources: Yahoo Finance, https://www.macrotrends.net/ , https://www.barrons.com/
-6. Add a comparison between similar stocks in Strong business tester
-7. Make it a web application
-8. Enable extracting data with the name of a company
-   from https://www.barrons.com/market-data/stocks/new-fifty-two-week-highs-lows
-9. When storing a company's symbol and the current datetime in the database, you could also store the results of the
-   checks. This way, if you need to check a company's data again later, you can just query the database instead of
-   having to fetch and process the data again.
-10. Use multithreading or asynchronous programming to fetch and process data for multiple companies concurrently. This
-    would be especially beneficial if the list of companies is large, as the program would not need to wait for each
-    company's data to be fetched and processed before moving on to the next one.
-
-
-### Done
-* ~~Give a summary of all selected stocks with key metrics in a tabular format~~
-* ~~Calculate volatility as 52-week high / 52-week low~~
-* ~~Check if a business is good: average FCF / average Equity >= x%~~
-* ~~Eliminate companies with negative "Common Stock Equity"~~
-* ~~Develop a guru stock idea notebook~~
-* ~~Introduce a verbose option so that we only output those stock symbols with a strong business~~
-* ~~Keep track of the list of companies that have already been processed in the past 12 months~~
-    * ~~Create a stateful design~~
-    * ~~Implement the stateful design~~
-* ~~Process new stocks by reading an input file~~
-* ~~Get a list of all US based companies~~
-* ~~Add a cheap business tester~~
-* ~~Add a cheap business tester notebook~~
-* ~~Plot a graph for Free Cash Flow~~
-* ~~Plot a graph for Balance sheet analysis~~
-* ~~Try https://github.com/dpguthrie/yahooquery~~
-* ~~Install JupyterLab for interactive and reproducible work~~
-* ~~Install yfinance and pandas-datareader for yahoo finance API~~
-
-### Challenges
-
-* 2023-03-12 yfinance doesn't work after the first trial. It failed with the error "Exception: yfinance failed to
-  decrypt Yahoo data response". The issue had been reported by others
-  in https://github.com/ranaroussi/yfinance/issues/1407. Currently not solved yet.
-
-### Questions
-
-* ~~What fields do we need in the data model to keep the state for strong business tester?~~
-    * symbol, tested_at
-* ~~What are the possible database to use?~~
-* ~~Should the data store be a graph or relational data store?~~
-
-## Where?
-
-### Jupyter Lab
-
-* https://pypi.org/project/jupyterlab/
-
-### yahooquery
-
-* https://github.com/dpguthrie/yahooquery
-* https://yahooquery.dpguthrie.com/
-
-### yfinance
-
-* https://github.com/ranaroussi/yfinance
-* https://pypi.org/project/yfinance/
-* https://aroussi.com/post/python-yahoo-finance
+## Contributing
+Contributions are welcome. Feel free to fork the repository, make improvements, and submit a pull request.
