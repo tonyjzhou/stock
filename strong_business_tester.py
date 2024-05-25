@@ -78,11 +78,11 @@ def has_good_return_on_equity(ticker, verbose=False):
     return average_roe > 0.13, average_roe
 
 
-def has_consistently_low_debt_ratios(debt_equity_ratio_values, threshold=3):
-    return all([v < threshold or math.isnan(v) for v in debt_equity_ratio_values])
+def _has_consistently_low_ratios(ratios, threshold=0.4):
+    return all([ratio < threshold or math.isnan(ratio) for ratio in ratios])
 
 
-def has_strong_balance_sheet(ticker, verbose):
+def has_consistently_low_debt_ratios(ticker, verbose):
     balance_sheet = ticker.balance_sheet(frequency='Quarterly')
 
     if isinstance(balance_sheet, str):
@@ -106,9 +106,44 @@ def has_strong_balance_sheet(ticker, verbose):
     debt_equity_ratio = debt_equity_ratio.set_index('asOfDate').to_dict()['TotalDebt/CommonStockEquity']
     debt_equity_ratio_values = list(debt_equity_ratio.values())
 
-    if not has_consistently_low_debt_ratios(debt_equity_ratio_values):
+    if not _has_consistently_low_ratios(debt_equity_ratio_values):
         if verbose:
             logging.info(f"{ticker.symbols} doesn't have consistently low debt ratios: {debt_equity_ratio_values}")
+        return False
+
+    return True
+
+
+def has_consistently_low_goodwill_ratios(ticker, verbose):
+    balance_sheet = ticker.balance_sheet(frequency='Quarterly')
+
+    if isinstance(balance_sheet, str):
+        if verbose:
+            logging.info(f"Error: balance sheet for {ticker.symbols} is a string: {balance_sheet}")
+        return False
+
+    if balance_sheet is None or balance_sheet.empty or 'CommonStockEquity' not in balance_sheet.columns:
+        if verbose:
+            logging.info(f"No CommonStockEquity data available for {ticker.symbols}")
+        return False
+
+    try:
+        balance_sheet['GoodwillAndOtherIntangibleAssets/CommonStockEquity'] = balance_sheet[
+                                                                                  'GoodwillAndOtherIntangibleAssets'] / \
+                                                                              balance_sheet['CommonStockEquity']
+    except KeyError:
+        if verbose:
+            logging.info(f"Required data missing in balance sheet for {ticker.symbols}")
+        return False
+
+    goodwill_equity_ratio = balance_sheet[['asOfDate', 'GoodwillAndOtherIntangibleAssets/CommonStockEquity']]
+    goodwill_equity_ratio = goodwill_equity_ratio.set_index('asOfDate').to_dict()[
+        'GoodwillAndOtherIntangibleAssets/CommonStockEquity']
+    goodwill_equity_ratio_values = list(goodwill_equity_ratio.values())
+
+    if not _has_consistently_low_ratios(goodwill_equity_ratio_values):
+        if verbose:
+            logging.info(f"{ticker.symbols} doesn't have consistently low goodwill ratios: {goodwill_equity_ratio_values}")
         return False
 
     return True
@@ -183,9 +218,14 @@ def test_strong_buy(symbol, verbose):
                     logging.info(f"{ticker.symbols} doesn't have good return on equity: {round(roe * 100, 2)}%")
                 return None  # Return None if ROE not good
 
-            if not has_strong_balance_sheet(ticker, verbose=verbose):
+            if not has_consistently_low_debt_ratios(ticker, verbose=verbose):
                 if verbose:
-                    logging.info(f"{ticker.symbols} doesn't have strong balance sheet")
+                    logging.info(f"{ticker.symbols} doesn't have consistently low debt ratios")
+                return None  # Return None if balance sheet not strong
+
+            if not has_consistently_low_goodwill_ratios(ticker, verbose=verbose):
+                if verbose:
+                    logging.info(f"{ticker.symbols} doesn't have consistently low goodwill ratios")
                 return None  # Return None if balance sheet not strong
 
             logging.info(
