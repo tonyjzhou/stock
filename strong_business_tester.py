@@ -223,10 +223,11 @@ def test_strong_buy(symbol, verbose):
                     logging.info(f"{ticker.symbols} doesn't have consistently low debt ratios")
                 return None  # Return None if balance sheet not strong
 
-            if not has_consistently_low_goodwill_ratios(ticker, verbose=verbose):
-                if verbose:
-                    logging.info(f"{ticker.symbols} doesn't have consistently low goodwill ratios")
-                return None  # Return None if balance sheet not strong
+            # Removed for inaccuracy of Yahoo finance data tested on `Medifast, Inc. (MED)`
+            # if not has_consistently_low_goodwill_ratios(ticker, verbose=verbose):
+            #     if verbose:
+            #         logging.info(f"{ticker.symbols} doesn't have consistently low goodwill ratios")
+            #     return None  # Return None if balance sheet not strong
 
             logging.info(
                 f"{ticker.symbols} has a strong business with ROE: {round(roe * 100, 2)}%\n")
