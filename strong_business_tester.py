@@ -6,6 +6,7 @@ import math
 import os
 import statistics
 from datetime import datetime
+from logging.handlers import RotatingFileHandler
 
 from tabulate import tabulate
 from yahooquery import Ticker
@@ -24,7 +25,7 @@ program_name = os.path.splitext(os.path.basename(__file__))[0]
 log_file_name = f"{program_name}.log"
 
 # Create a file handler with the program's log file name
-file_handler = logging.FileHandler(log_file_name)
+file_handler = RotatingFileHandler(log_file_name, maxBytes=0, backupCount=3)
 file_handler.setFormatter(formatter)
 
 # Add handler to the logger
