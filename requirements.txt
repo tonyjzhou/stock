@@ -4,3 +4,4 @@ yfinance
 pandas-datareader
 matplotlib
 tabulate
+aiosqlite
