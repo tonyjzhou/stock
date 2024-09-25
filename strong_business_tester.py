@@ -3,6 +3,7 @@ import argparse
 import asyncio
 import logging
 import math
+import os
 import statistics
 from datetime import datetime
 
@@ -11,11 +12,23 @@ from yahooquery import Ticker
 
 from database import DatabaseManager
 
-# Set up basic logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+# Set up logging to both console and a file
+logger = logging.getLogger()  # Get the root logger
+logger.setLevel(logging.INFO)
+
+# Create a formatter to define the log output format
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# Get the current program name and set the log file name
+program_name = os.path.splitext(os.path.basename(__file__))[0]
+log_file_name = f"{program_name}.log"
+
+# Create a file handler with the program's log file name
+file_handler = logging.FileHandler(log_file_name)
+file_handler.setFormatter(formatter)
+
+# Add handler to the logger
+logger.addHandler(file_handler)
 
 
 def fetch_financial_data(ticker, data_type, frequency='Annual'):
