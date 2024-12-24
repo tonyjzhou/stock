@@ -7,6 +7,7 @@ import os
 import statistics
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
+import csv  # <-- Added import for CSV handling
 
 from tabulate import tabulate
 from yahooquery import Ticker
@@ -114,7 +115,7 @@ def has_consistently_low_debt_ratios(ticker, verbose):
 
     try:
         balance_sheet['DebtEquityRatio'] = (
-                balance_sheet['TotalDebt'] / balance_sheet['CommonStockEquity']
+            balance_sheet['TotalDebt'] / balance_sheet['CommonStockEquity']
         )
     except KeyError as e:
         if verbose:
@@ -247,11 +248,20 @@ async def main():
     lock = asyncio.Lock()
     tasks = []
 
-    with open("tickers.txt", "r") as file:
-        for line in file:
-            symbol = line.strip()
-            tasks.append(test_strong_buy(symbol, args.roe_threshold,
-                                         args.volatility_threshold, args.verbose, lock))
+    # Use encoding='utf-8-sig' to handle any BOM characters
+    with open("Results.csv", newline='', encoding='utf-8-sig') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            symbol = row["Symbol"].strip()
+            tasks.append(
+                test_strong_buy(
+                    symbol,
+                    args.roe_threshold,
+                    args.volatility_threshold,
+                    args.verbose,
+                    lock
+                )
+            )
             logging.info(f"Processing ticker: {symbol}")
 
     results = await asyncio.gather(*tasks)
@@ -260,7 +270,6 @@ async def main():
     if strong_businesses:
         strong_businesses.sort(key=lambda x: x['ROE'], reverse=True)
         logging.info(f'\n{tabulate(strong_businesses, headers="keys")}')
-
 
 if __name__ == '__main__':
     asyncio.run(main())
