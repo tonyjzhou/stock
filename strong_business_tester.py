@@ -243,13 +243,15 @@ async def main():
     parser.add_argument('--roe-threshold', type=float, default=0.13, help='Minimum ROE threshold')
     parser.add_argument('--volatility-threshold', type=float, default=0.4,
                         help='Minimum volatility threshold')
+    parser.add_argument('-c', '--csv-file', type=str, default='Results.csv',
+                        help='Path to the input CSV file')  # Added argument for CSV file
     args = parser.parse_args()
 
     lock = asyncio.Lock()
     tasks = []
 
-    # Use encoding='utf-8-sig' to handle any BOM characters
-    with open("Results.csv", newline='', encoding='utf-8-sig') as csvfile:
+    # Use the passed CSV file path
+    with open(args.csv_file, newline='', encoding='utf-8-sig') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             symbol = row["Symbol"].strip()
