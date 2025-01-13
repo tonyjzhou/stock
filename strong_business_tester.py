@@ -240,8 +240,8 @@ async def test_strong_buy(symbol, roe_threshold, volatility_threshold, verbose, 
 async def main():
     parser = argparse.ArgumentParser(description='Test if a stock has a strong business.')
     parser.add_argument('-v', '--verbose', action='store_true', help='Increase output verbosity')
-    parser.add_argument('--roe-threshold', type=float, default=0.13, help='Minimum ROE threshold')
-    parser.add_argument('--volatility-threshold', type=float, default=0.4,
+    parser.add_argument('--roe-threshold', type=float, default=0.17, help='Minimum ROE threshold')
+    parser.add_argument('--volatility-threshold', type=float, default=0.7,
                         help='Minimum volatility threshold')
     parser.add_argument('-c', '--csv-file', type=str, default='Results.csv',
                         help='Path to the input CSV file')  # Added argument for CSV file
