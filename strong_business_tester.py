@@ -19,7 +19,7 @@ logger = logging.getLogger()  # Get the root logger
 logger.setLevel(logging.INFO)
 
 # Create a formatter to define the log output format
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
 # Get the current program name and set the log file name
 program_name = os.path.splitext(os.path.basename(__file__))[0]
@@ -33,7 +33,7 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
 
-def fetch_financial_data(ticker, data_type, frequency='Annual'):
+def fetch_financial_data(ticker, data_type, frequency="Annual"):
     """
     Fetch financial data for a given ticker.
     """
@@ -58,7 +58,7 @@ def process_financial_data(data, data_key):
     Process financial data to extract a list of values for a given key.
     """
     try:
-        processed_data = data[['asOfDate', data_key]].set_index('asOfDate')
+        processed_data = data[["asOfDate", data_key]].set_index("asOfDate")
         return strip_nan(processed_data[data_key].values)
     except Exception as e:
         logging.error(f"Error in processing data: {e}")
@@ -84,12 +84,14 @@ def has_good_return_on_equity(ticker, roe_threshold, verbose=False):
     """
     Determine if the ticker has a good return on equity.
     """
-    average_fcf = average_financial_metric(ticker, 'cash_flow', 'FreeCashFlow')
-    average_cse = average_financial_metric(ticker, 'balance_sheet', 'CommonStockEquity')
+    average_fcf = average_financial_metric(ticker, "cash_flow", "FreeCashFlow")
+    average_cse = average_financial_metric(ticker, "balance_sheet", "CommonStockEquity")
     if average_fcf <= 0 or average_cse <= 0:
         if verbose:
-            logging.info(f"{ticker.symbols} does not meet ROE criteria: "
-                         f"FCF={average_fcf}, CSE={average_cse}")
+            logging.info(
+                f"{ticker.symbols} does not meet ROE criteria: "
+                f"FCF={average_fcf}, CSE={average_cse}"
+            )
         return False, 0
 
     average_roe = average_fcf / average_cse
@@ -107,40 +109,44 @@ def has_consistently_low_debt_ratios(ticker, verbose):
     """
     Check if the ticker has consistently low debt-to-equity ratios.
     """
-    balance_sheet = fetch_financial_data(ticker, 'balance_sheet', frequency='Quarterly')
-    if balance_sheet is None or 'CommonStockEquity' not in balance_sheet.columns:
+    balance_sheet = fetch_financial_data(ticker, "balance_sheet", frequency="Quarterly")
+    if balance_sheet is None or "CommonStockEquity" not in balance_sheet.columns:
         if verbose:
             logging.info(f"No CommonStockEquity data available for {ticker.symbols}")
         return False
 
     try:
-        balance_sheet['DebtEquityRatio'] = (
-            balance_sheet['TotalDebt'] / balance_sheet['CommonStockEquity']
+        balance_sheet["DebtEquityRatio"] = (
+            balance_sheet["TotalDebt"] / balance_sheet["CommonStockEquity"]
         )
     except KeyError as e:
         if verbose:
-            logging.info(f"Required data missing in balance sheet for {ticker.symbols}: {e}")
+            logging.info(
+                f"Required data missing in balance sheet for {ticker.symbols}: {e}"
+            )
         return False
 
-    debt_equity_ratios = process_financial_data(balance_sheet, 'DebtEquityRatio')
+    debt_equity_ratios = process_financial_data(balance_sheet, "DebtEquityRatio")
     if not _has_consistently_low_ratios(debt_equity_ratios):
         if verbose:
-            logging.info(f"{ticker.symbols} doesn't have consistently low debt ratios: "
-                         f"{debt_equity_ratios}")
+            logging.info(
+                f"{ticker.symbols} doesn't have consistently low debt ratios: "
+                f"{debt_equity_ratios}"
+            )
         return False
 
     return True
 
 
-async def has_processed(symbol, lock):
+async def has_processed(symbol, lock, process_interval):
     async with DatabaseManager(lock=lock) as db:
         rows = await db.read_data(symbol)
         if not rows:
             return False
 
         symbol, tested_at = rows[0]
-        tested_at = datetime.strptime(tested_at, '%Y-%m-%d %H:%M:%S.%f')
-        return (datetime.now() - tested_at).days < 365
+        tested_at = datetime.strptime(tested_at, "%Y-%m-%d %H:%M:%S.%f")
+        return (datetime.now() - tested_at).days < process_interval
 
 
 async def is_volatile(ticker, symbol, threshold=0.5, verbose=False):
@@ -156,11 +162,13 @@ async def is_volatile(ticker, symbol, threshold=0.5, verbose=False):
 
         detail = summary_detail[symbol]
         if isinstance(detail, dict):
-            fifty_two_week_low = detail.get('fiftyTwoWeekLow')
-            fifty_two_week_high = detail.get('fiftyTwoWeekHigh')
+            fifty_two_week_low = detail.get("fiftyTwoWeekLow")
+            fifty_two_week_high = detail.get("fiftyTwoWeekHigh")
         else:
             if verbose:
-                logging.warning(f"Unexpected summary detail format for {symbol}: {detail}")
+                logging.warning(
+                    f"Unexpected summary detail format for {symbol}: {detail}"
+                )
             return False, 0, 0, 0
 
         if not fifty_two_week_low or not fifty_two_week_high:
@@ -170,7 +178,12 @@ async def is_volatile(ticker, symbol, threshold=0.5, verbose=False):
 
         fifty_two_week_diff = fifty_two_week_high - fifty_two_week_low
         volatility = fifty_two_week_diff / fifty_two_week_low
-        return volatility >= threshold, volatility, fifty_two_week_low, fifty_two_week_high
+        return (
+            volatility >= threshold,
+            volatility,
+            fifty_two_week_low,
+            fifty_two_week_high,
+        )
 
     except Exception as e:
         if verbose:
@@ -178,11 +191,13 @@ async def is_volatile(ticker, symbol, threshold=0.5, verbose=False):
         return False, 0, 0, 0
 
 
-async def test_strong_buy(symbol, roe_threshold, volatility_threshold, verbose, lock):
+async def test_strong_buy(
+    symbol, roe_threshold, volatility_threshold, verbose, lock, process_interval
+):
     """
     Test if a stock is a strong buy based on various financial criteria.
     """
-    if await has_processed(symbol, lock):
+    if await has_processed(symbol, lock, process_interval):
         logging.info(f"{symbol} has already been processed")
         return None
     else:
@@ -194,26 +209,33 @@ async def test_strong_buy(symbol, roe_threshold, volatility_threshold, verbose, 
         price_data = ticker.price
         if price_data and symbol in price_data:
             if isinstance(price_data[symbol], dict):
-                exchange_name = price_data[symbol].get('exchangeName', 'Unknown')
+                exchange_name = price_data[symbol].get("exchangeName", "Unknown")
                 logging.info(f"{symbol}'s exchange is: {exchange_name}")
             else:
-                logging.warning(f"Unexpected data format for {symbol}: {price_data[symbol]}")
+                logging.warning(
+                    f"Unexpected data format for {symbol}: {price_data[symbol]}"
+                )
         else:
             logging.warning(f"No price data found for {symbol}")
 
     volatile, volatility, fifty_two_week_low, fifty_two_week_high = await is_volatile(
-        ticker, symbol, threshold=volatility_threshold, verbose=verbose)
+        ticker, symbol, threshold=volatility_threshold, verbose=verbose
+    )
 
     if not volatile:
         if verbose:
-            logging.info(f"{symbol} is not volatile enough: {round(volatility * 100, 2)}%")
+            logging.info(
+                f"{symbol} is not volatile enough: {round(volatility * 100, 2)}%"
+            )
         return None
 
     good_roe, roe = has_good_return_on_equity(ticker, roe_threshold, verbose=verbose)
 
     if not good_roe:
         if verbose:
-            logging.info(f"{symbol} doesn't have good return on equity: {round(roe * 100, 2)}%")
+            logging.info(
+                f"{symbol} doesn't have good return on equity: {round(roe * 100, 2)}%"
+            )
         return None
 
     if not has_consistently_low_debt_ratios(ticker, verbose=verbose):
@@ -224,34 +246,55 @@ async def test_strong_buy(symbol, roe_threshold, volatility_threshold, verbose, 
     logging.info(f"{symbol} has a strong business with ROE: {round(roe * 100, 2)}%")
     price_data = ticker.price
     if price_data and symbol in price_data and isinstance(price_data[symbol], dict):
-        market = price_data[symbol].get('exchangeName', 'Unknown')
+        market = price_data[symbol].get("exchangeName", "Unknown")
     else:
-        market = 'Unknown'
+        market = "Unknown"
     return {
-        'Symbol': symbol,
-        'ROE': round(roe * 100, 2),
-        'Volatility': round(volatility * 100, 2),
-        '52-week Low': fifty_two_week_low,
-        '52-week High': fifty_two_week_high,
-        'Market': market,
+        "Symbol": symbol,
+        "ROE": round(roe * 100, 2),
+        "Volatility": round(volatility * 100, 2),
+        "52-week Low": fifty_two_week_low,
+        "52-week High": fifty_two_week_high,
+        "Market": market,
     }
 
 
 async def main():
-    parser = argparse.ArgumentParser(description='Test if a stock has a strong business.')
-    parser.add_argument('-v', '--verbose', action='store_true', help='Increase output verbosity')
-    parser.add_argument('--roe-threshold', type=float, default=0.17, help='Minimum ROE threshold')
-    parser.add_argument('--volatility-threshold', type=float, default=0.7,
-                        help='Minimum volatility threshold')
-    parser.add_argument('-c', '--csv-file', type=str, default='Results.csv',
-                        help='Path to the input CSV file')  # Added argument for CSV file
+    parser = argparse.ArgumentParser(
+        description="Test if a stock has a strong business."
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Increase output verbosity"
+    )
+    parser.add_argument(
+        "--roe-threshold", type=float, default=0.17, help="Minimum ROE threshold"
+    )
+    parser.add_argument(
+        "--volatility-threshold",
+        type=float,
+        default=0.7,
+        help="Minimum volatility threshold",
+    )
+    parser.add_argument(
+        "-c",
+        "--csv-file",
+        type=str,
+        default="Results.csv",
+        help="Path to the input CSV file",
+    )  # Added argument for CSV file
+    parser.add_argument(
+        "--process-interval",
+        type=int,
+        default=180,
+        help="Number of days before reprocessing a symbol (default: 180)",
+    )
     args = parser.parse_args()
 
     lock = asyncio.Lock()
     tasks = []
 
     # Use the passed CSV file path
-    with open(args.csv_file, newline='', encoding='utf-8-sig') as csvfile:
+    with open(args.csv_file, newline="", encoding="utf-8-sig") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             symbol = row["Symbol"].strip()
@@ -261,7 +304,8 @@ async def main():
                     args.roe_threshold,
                     args.volatility_threshold,
                     args.verbose,
-                    lock
+                    lock,
+                    args.process_interval,
                 )
             )
             logging.info(f"Processing ticker: {symbol}")
@@ -270,8 +314,9 @@ async def main():
     strong_businesses = [result for result in results if result is not None]
 
     if strong_businesses:
-        strong_businesses.sort(key=lambda x: x['ROE'], reverse=True)
+        strong_businesses.sort(key=lambda x: x["ROE"], reverse=True)
         logging.info(f'\n{tabulate(strong_businesses, headers="keys")}')
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     asyncio.run(main())

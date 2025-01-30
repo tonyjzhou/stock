@@ -4,11 +4,13 @@ import logging
 import aiosqlite
 
 # Set up basic logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 class DatabaseManager:
-    def __init__(self, db_path='test.db', lock=None):
+    def __init__(self, db_path="test.db", lock=None):
         self.db_path = db_path
         self.conn = None
         self.lock = lock or asyncio.Lock()
@@ -33,11 +35,13 @@ class DatabaseManager:
     async def create_table(self):
         try:
             async with self.lock:
-                await self.conn.execute('''
+                await self.conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS stocks
                     (symbol TEXT PRIMARY KEY, 
                     tested_at DATETIME NOT NULL)
-                ''')
+                """
+                )
                 await self.conn.commit()
         except aiosqlite.Error as e:
             logging.error(f"Error creating table: {e}")
@@ -46,7 +50,9 @@ class DatabaseManager:
     async def insert_data(self, symbol, tested_at):
         try:
             async with self.lock:
-                await self.conn.execute("INSERT INTO stocks VALUES (?, ?)", (symbol, tested_at))
+                await self.conn.execute(
+                    "INSERT INTO stocks VALUES (?, ?)", (symbol, tested_at)
+                )
                 await self.conn.commit()
         except aiosqlite.IntegrityError:
             logging.warning(f"Record with symbol {symbol} already exists.")
@@ -58,7 +64,8 @@ class DatabaseManager:
         try:
             async with self.lock:
                 await self.conn.execute(
-                    "UPDATE stocks SET tested_at = ? WHERE symbol = ?", (tested_at, symbol)
+                    "UPDATE stocks SET tested_at = ? WHERE symbol = ?",
+                    (tested_at, symbol),
                 )
                 await self.conn.commit()
         except aiosqlite.Error as e:
@@ -68,7 +75,9 @@ class DatabaseManager:
     async def delete_data(self, symbol):
         try:
             async with self.lock:
-                await self.conn.execute("DELETE FROM stocks WHERE symbol = ?", (symbol,))
+                await self.conn.execute(
+                    "DELETE FROM stocks WHERE symbol = ?", (symbol,)
+                )
                 await self.conn.commit()
                 logging.info(f"Deleted {symbol}")
         except aiosqlite.Error as e:
@@ -90,7 +99,7 @@ class DatabaseManager:
 
 
 async def refresh():
-    async with DatabaseManager('test.db') as db:
+    async with DatabaseManager("test.db") as db:
         with open("tickers.txt", "r") as file:
             for line in file:
                 symbol = line.strip()
@@ -98,12 +107,12 @@ async def refresh():
 
 
 async def test_run():
-    async with DatabaseManager('test.db') as db:
-        await db.insert_data('AAPL', '2023-12-22')
-        logging.info(await db.read_data('AAPL'))
-        await db.update_data('AAPL', '2023-12-23')
-        logging.info(await db.read_data('AAPL'))
-        await db.delete_data('AAPL')
+    async with DatabaseManager("test.db") as db:
+        await db.insert_data("AAPL", "2023-12-22")
+        logging.info(await db.read_data("AAPL"))
+        await db.update_data("AAPL", "2023-12-23")
+        logging.info(await db.read_data("AAPL"))
+        await db.delete_data("AAPL")
         logging.info(await db.read_data())
 
 
@@ -112,5 +121,5 @@ def main():
     asyncio.run(refresh())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
