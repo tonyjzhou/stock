@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
 import asyncio
 import logging
+import csv
+import argparse
+import os
 
 import aiosqlite
 
@@ -97,13 +101,17 @@ class DatabaseManager:
             logging.error(f"Error reading data: {e}")
             raise
 
+    @classmethod
+    async def refresh(cls, csv_file="Results.csv", db_path="test.db"):
+        # Expand user path (e.g., ~/Downloads/Results.csv -> /Users/username/Downloads/Results.csv)
+        csv_file = os.path.expanduser(csv_file)
 
-async def refresh():
-    async with DatabaseManager("test.db") as db:
-        with open("tickers.txt", "r") as file:
-            for line in file:
-                symbol = line.strip()
-                await db.delete_data(symbol)
+        async with cls(db_path) as db:
+            with open(csv_file, newline="", encoding="utf-8-sig") as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    symbol = row["Symbol"].strip()
+                    await db.delete_data(symbol)
 
 
 async def test_run():
@@ -116,9 +124,22 @@ async def test_run():
         logging.info(await db.read_data())
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Database management for stock symbols."
+    )
+    parser.add_argument(
+        "-c",
+        "--csv-file",
+        default="Results.csv",
+        help="Path to the input CSV file (default: Results.csv)",
+    )
+    return parser.parse_args()
+
+
 def main():
-    # asyncio.run(test_run())
-    asyncio.run(refresh())
+    args = parse_args()
+    asyncio.run(DatabaseManager.refresh(args.csv_file))
 
 
 if __name__ == "__main__":

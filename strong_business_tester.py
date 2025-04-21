@@ -9,10 +9,35 @@ from datetime import datetime
 from logging.handlers import RotatingFileHandler
 import csv  # <-- Added import for CSV handling
 
-from tabulate import tabulate
 from yahooquery import Ticker
 
 from database import DatabaseManager
+
+
+def format_table_markdown(data):
+    """Format a list of dictionaries as a markdown table."""
+    if not data:
+        return ""
+
+    # Get headers from the first dictionary
+    headers = list(data[0].keys())
+
+    # Create header row
+    header_row = "| " + " | ".join(headers) + " |"
+
+    # Create separator row
+    separator_row = "| " + " | ".join(["---" for _ in headers]) + " |"
+
+    # Create data rows
+    data_rows = []
+    for row in data:
+        data_rows.append(
+            "| " + " | ".join(str(row[header]) for header in headers) + " |"
+        )
+
+    # Combine all rows
+    return "\n".join([header_row, separator_row] + data_rows)
+
 
 # Set up logging to both console and a file
 logger = logging.getLogger()  # Get the root logger
@@ -315,7 +340,8 @@ async def main():
 
     if strong_businesses:
         strong_businesses.sort(key=lambda x: x["ROE"], reverse=True)
-        logging.info(f'\n{tabulate(strong_businesses, headers="keys")}')
+        markdown_table = format_table_markdown(strong_businesses)
+        logging.info(f"\n{markdown_table}")
 
 
 if __name__ == "__main__":
